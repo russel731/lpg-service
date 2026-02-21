@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime
-from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
-Base = declarative_base()
+# 🔥 ВАЖНО: используем Base из database
+from app.database import Base
 
 
 # 🔥 Заявки владельцев станций
@@ -11,7 +11,7 @@ class OwnerRequest(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    # 🔥 Telegram ID обязательно
+    # 🔥 Telegram ID
     telegram_id = Column(Integer, nullable=False, index=True)
 
     phone = Column(String, nullable=False)
