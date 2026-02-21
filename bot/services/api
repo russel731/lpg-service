@@ -1,0 +1,19 @@
+import aiohttp
+
+BASE_URL = "http://backend:8000"
+
+
+async def get_nearby_stations(latitude: float, longitude: float):
+    url = f"{BASE_URL}/stations/nearby"
+
+    params = {
+        "lat": latitude,
+        "lon": longitude
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, params=params) as response:
+            if response.status == 200:
+                return await response.json()
+            else:
+                return None

@@ -1,0 +1,11 @@
+import requests
+
+API_URL = "http://backend:8000"
+
+
+def get_nearby_stations(lat: float, lon: float):
+    response = requests.get(
+        f"{API_URL}/stations/nearby",
+        params={"lat": lat, "lon": lon}
+    )
+    return response.json()
