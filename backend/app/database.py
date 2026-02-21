@@ -1,8 +1,12 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+import os
 
-# ВАЖНО: подключение к PostgreSQL внутри Docker
-DATABASE_URL = "postgresql://lpg:lpg@postgres:5432/lpg"
+# 🔹 URL базы (из .env или docker)
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://postgres:postgres@postgres:5432/postgres"
+)
 
 engine = create_engine(DATABASE_URL)
 
@@ -15,7 +19,7 @@ SessionLocal = sessionmaker(
 Base = declarative_base()
 
 
-# Dependency для FastAPI
+# 🔹 dependency для FastAPI
 def get_db():
     db = SessionLocal()
     try:
