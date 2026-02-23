@@ -1,3 +1,1 @@
-from .station import StationCreate, StationResponse
-
-__all__ = ["StationCreate", "StationResponse"]
+# backend/app/schemas/__init__.py

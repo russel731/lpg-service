@@ -1,6 +1,5 @@
-version: "3.9"
-
 services:
+
   postgres:
     image: postgres:15
     container_name: lpg-service-postgres
@@ -35,6 +34,7 @@ services:
     depends_on:
       - backend
     command: python main.py
+
 
 volumes:
   pgdata:

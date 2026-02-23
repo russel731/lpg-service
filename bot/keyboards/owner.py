@@ -1,21 +1,31 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 
-def request_location_keyboard(lang: str):
-    """
-    Клавиатура запроса геолокации
-    """
-
+# ===== КНОПКА ТЕЛЕФОНА =====
+def request_phone_keyboard(lang: str):
     if lang == "kz":
-        text = "📍 Геолокацияны жіберу"
+        text = "📱 Телефон жіберу"
+    else:
+        text = "📱 Отправить телефон"
+
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text=text, request_contact=True)]
+        ],
+        resize_keyboard=True
+    )
+
+
+# ===== КНОПКА ГЕОЛОКАЦИИ =====
+def request_location_keyboard(lang: str):
+    if lang == "kz":
+        text = "📍 Геолокация жіберу"
     else:
         text = "📍 Отправить геолокацию"
 
-    keyboard = ReplyKeyboardMarkup(
+    return ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text=text, request_location=True)]
         ],
         resize_keyboard=True
     )
-
-    return keyboard

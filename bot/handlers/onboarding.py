@@ -15,27 +15,13 @@ class OwnerRegistration(StatesGroup):
     location = State()
 
 
-# Универсальный ловец кнопки (любой язык)
-@router.message(F.text.contains("АГЗС") | F.text.contains("заправ"))
-async def start_owner_registration(message: Message, state: FSMContext):
-
-    lang = get_user_language(message.from_user.id)
-
-    if lang == "kz":
-        await message.answer("📱 Байланыс нөміріңізді енгізіңіз")
-    else:
-        await message.answer("📱 Введите контактный номер")
-
-    await state.set_state(OwnerRegistration.phone)
-
-
 # Телефон
 @router.message(OwnerRegistration.phone)
 async def get_phone(message: Message, state: FSMContext):
 
     await state.update_data(phone=message.text)
 
-    lang = get_user_language(message.from_user.id)
+    lang = await get_user_language(message.from_user.id)
 
     if lang == "kz":
         await message.answer("⛽ Бекет атауын енгізіңіз")
