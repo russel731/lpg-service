@@ -9,8 +9,7 @@ from config import BOT_TOKEN
 # routers
 from handlers.start import router as start_router
 from handlers.main_menu import router as main_menu_router
-from handlers.owner_registration import router as owner_router
-
+from handlers.onboarding import router as onboarding_router
 
 async def main():
     logging.basicConfig(level=logging.INFO)
@@ -21,7 +20,7 @@ async def main():
     # порядок очень важен
     dp.include_router(start_router)
     dp.include_router(main_menu_router)
-    dp.include_router(owner_router)
+    dp.include_router(onboarding_router)
 
     # запуск
     await dp.start_polling(bot)

@@ -37,7 +37,7 @@ def get_user(telegram_id: int, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(
         models.User.telegram_id == telegram_id
     ).first()
-
+docker compose up --build
     if not user:
         return {"user": None}
 

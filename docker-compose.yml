@@ -1,40 +1,17 @@
-services:
+version: "3.8"
 
-  postgres:
+services:
+  db:
     image: postgres:15
-    container_name: lpg-service-postgres
-    restart: always
+    container_name: lpg_db
     environment:
-      POSTGRES_USER: lpg
-      POSTGRES_PASSWORD: lpg
-      POSTGRES_DB: lpg
+      POSTGRES_DB: lpgdb
+      POSTGRES_USER: lpguser
+      POSTGRES_PASSWORD: lpgpass
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
-
-  backend:
-    build: ./backend
-    container_name: lpg-service-backend
-    restart: always
-    env_file:
-      - .env
-    depends_on:
-      - postgres
-    ports:
-      - "8000:8000"
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
-
-  bot:
-    build: ./bot
-    container_name: lpg-service-bot
-    restart: always
-    env_file:
-      - .env
-    depends_on:
-      - backend
-    command: python main.py
-
+      - postgres_data:/var/lib/postgresql/data
 
 volumes:
-  pgdata:
+  postgres_data:
