@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>АГЗС — Админ панель</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a1a2e; }
+
+    /* LOGIN */
+    #login-screen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    }
+    .login-box { background: white; border-radius: 24px; padding: 40px; width: 100%; max-width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .login-logo { font-size: 48px; text-align: center; margin-bottom: 8px; }
+    .login-title { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: 4px; }
+    .login-sub { font-size: 13px; color: #9ca3af; text-align: center; margin-bottom: 32px; }
+    .inp-group { margin-bottom: 16px; }
+    .inp-label { font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 6px; display: block; }
+    .inp { width: 100%; padding: 12px 14px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 15px; outline: none; transition: border-color 0.2s; background: #f9fafb; }
+    .inp:focus { border-color: #22c55e; background: white; }
+    .btn-login { width: 100%; padding: 14px; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 8px; }
+    .err { background: #fef2f2; color: #991b1b; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 12px; display: none; }
+
+    /* APP */
+    #app-screen { display: none; min-height: 100vh; }
+    .sidebar {
+      position: fixed; left: 0; top: 0; bottom: 0; width: 240px;
+      background: linear-gradient(180deg, #1a1a2e 0%, #0f3460 100%);
+      padding: 24px 0; z-index: 100;
+    }
+    .sidebar-logo { padding: 0 24px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-logo-icon { font-size: 32px; }
+    .sidebar-logo-text { font-size: 16px; font-weight: 800; color: white; margin-top: 4px; }
+    .sidebar-logo-sub { font-size: 11px; color: rgba(255,255,255,0.4); }
+    .sidebar-nav { padding: 16px 0; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 24px; color: rgba(255,255,255,0.6);
+      cursor: pointer; transition: all 0.2s; font-size: 14px; font-weight: 500;
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+    .nav-item.active { background: rgba(34,197,94,0.15); color: #22c55e; border-left-color: #22c55e; }
+    .nav-icon { font-size: 18px; width: 24px; text-align: center; }
+    .nav-badge { margin-left: auto; background: #ef4444; color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; }
+    .sidebar-footer { position: absolute; bottom: 0; left: 0; right: 0; padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .logout-btn { width: 100%; padding: 10px; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); border: none; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+    .logout-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+
+    .main { margin-left: 240px; padding: 32px; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .page-title { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+    .page-sub { font-size: 14px; color: #9ca3af; margin-bottom: 24px; }
+
+    /* STATS */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+    .stat-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .stat-icon { font-size: 28px; margin-bottom: 8px; }
+    .stat-val { font-size: 32px; font-weight: 800; margin-bottom: 2px; }
+    .stat-label { font-size: 13px; color: #9ca3af; }
+
+    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .chart-card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .chart-title { font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+    .bar-chart { display: flex; flex-direction: column; gap: 12px; }
+    .bar-row { display: flex; align-items: center; gap: 12px; }
+    .bar-label { font-size: 13px; width: 80px; font-weight: 500; }
+    .bar-track { flex: 1; height: 10px; background: #f3f4f6; border-radius: 10px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 10px; transition: width 0.5s ease; }
+    .bar-val { font-size: 13px; font-weight: 700; width: 30px; text-align: right; }
+    .donut-wrap { display: flex; align-items: center; gap: 24px; }
+    .donut-legend { display: flex; flex-direction: column; gap: 10px; }
+    .legend-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+    /* TABLE */
+    .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .search-inp { padding: 10px 14px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 14px; outline: none; width: 260px; }
+    .search-inp:focus { border-color: #22c55e; }
+    .add-btn { padding: 10px 20px; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .table-wrap { background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th { padding: 14px 16px; text-align: left; font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #f3f4f6; background: #fafafa; }
+    td { padding: 14px 16px; font-size: 14px; border-bottom: 1px solid #f9fafb; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafff8; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .badge-green { background: #dcfce7; color: #166534; }
+    .badge-yellow { background: #fef9c3; color: #854d0e; }
+    .badge-red { background: #fee2e2; color: #991b1b; }
+    .badge-purple { background: #f3e8ff; color: #6b21a8; }
+    .badge-pending { background: #fef3c7; color: #92400e; }
+    .badge-approved { background: #dcfce7; color: #166534; }
+    .action-btn { padding: 6px 12px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; margin-right: 4px; transition: all 0.15s; }
+    .btn-approve { background: #dcfce7; color: #166534; }
+    .btn-approve:hover { background: #22c55e; color: white; }
+    .btn-reject { background: #fee2e2; color: #991b1b; }
+    .btn-reject:hover { background: #ef4444; color: white; }
+    .btn-edit { background: #dbeafe; color: #1e40af; }
+    .btn-edit:hover { background: #3b82f6; color: white; }
+    .btn-delete { background: #fee2e2; color: #991b1b; }
+    .btn-delete:hover { background: #ef4444; color: white; }
+
+    /* MODAL */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: none; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: white; border-radius: 20px; padding: 32px; width: 100%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+    .modal-title { font-size: 20px; font-weight: 800; margin-bottom: 24px; }
+    .modal-footer { display: flex; gap: 10px; margin-top: 24px; }
+    .btn-cancel { flex: 1; padding: 12px; background: #f3f4f6; color: #6b7280; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .btn-save { flex: 1; padding: 12px; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .modal-inp-group { margin-bottom: 14px; }
+    .modal-inp-label { font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 6px; display: block; }
+    .modal-inp { width: 100%; padding: 11px 14px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 14px; outline: none; }
+    .modal-inp:focus { border-color: #22c55e; }
+    .modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #1a1a2e; color: white; padding: 14px 20px; border-radius: 12px; font-size: 14px; font-weight: 500; z-index: 9999; transform: translateY(80px); opacity: 0; transition: all 0.3s ease; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: #166534; }
+    .toast.error { background: #991b1b; }
+
+    @media (max-width: 1024px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .chart-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">⛽</div>
+    <div class="login-title">Админ панель</div>
+    <div class="login-sub">АГЗС Мониторинг · Казахстан</div>
+    <div class="err" id="login-err"></div>
+    <div class="inp-group">
+      <label class="inp-label">ЛОГИН</label>
+      <input class="inp" id="inp-login" type="text" placeholder="admin" value="admin"/>
+    </div>
+    <div class="inp-group">
+      <label class="inp-label">ПАРОЛЬ</label>
+      <input class="inp" id="inp-pass" type="password" placeholder="••••••••" value="admin123"/>
+    </div>
+    <button class="btn-login" onclick="doLogin()">Войти в панель</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">⛽</div>
+      <div class="sidebar-logo-text">АГЗС Мониторинг</div>
+      <div class="sidebar-logo-sub">Панель администратора</div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-item active" onclick="showPage('dashboard')">
+        <span class="nav-icon">📊</span> Статистика
+      </div>
+      <div class="nav-item" onclick="showPage('requests')" id="nav-requests">
+        <span class="nav-icon">📋</span> Заявки
+        <span class="nav-badge" id="badge-count" style="display:none">0</span>
+      </div>
+      <div class="nav-item" onclick="showPage('stations')">
+        <span class="nav-icon">⛽</span> Станции
+      </div>
+      <div class="nav-item" onclick="showPage('owners')">
+        <span class="nav-icon">👤</span> Владельцы
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="doLogout()">🚪 Выйти</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-title">Статистика</div>
+      <div class="page-sub">Обзор системы мониторинга АГЗС</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">⛽</div>
+          <div class="stat-val" id="stat-total">—</div>
+          <div class="stat-label">Всего станций</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🟢</div>
+          <div class="stat-val" style="color:#22c55e" id="stat-green">—</div>
+          <div class="stat-label">Газ есть</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">👤</div>
+          <div class="stat-val" id="stat-users">—</div>
+          <div class="stat-label">Владельцев</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-val" style="color:#eab308" id="stat-pending">—</div>
+          <div class="stat-label">Ожидают одобрения</div>
+        </div>
+      </div>
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="chart-title">📊 Статус станций</div>
+          <div class="bar-chart" id="bar-chart"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">👥 Пользователи</div>
+          <div class="donut-wrap">
+            <canvas id="donut-canvas" width="120" height="120"></canvas>
+            <div class="donut-legend" id="donut-legend"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REQUESTS -->
+    <div class="page" id="page-requests">
+      <div class="page-title">Заявки владельцев</div>
+      <div class="page-sub">Новые заявки на регистрацию</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Имя</th><th>Телефон</th><th>Станция</th><th>Дата</th><th>Действия</th>
+            </tr>
+          </thead>
+          <tbody id="requests-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- STATIONS -->
+    <div class="page" id="page-stations">
+      <div class="page-title">Станции</div>
+      <div class="page-sub">Управление газовыми станциями</div>
+      <div class="table-header">
+        <input class="search-inp" placeholder="🔍 Поиск станции..." oninput="filterStations(this.value)"/>
+        <button class="add-btn" onclick="openAddStation()">+ Добавить станцию</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Название</th><th>Координаты</th><th>Статус</th><th>Владелец</th><th>Обновлено</th><th>Действия</th>
+            </tr>
+          </thead>
+          <tbody id="stations-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- OWNERS -->
+    <div class="page" id="page-owners">
+      <div class="page-title">Владельцы</div>
+      <div class="page-sub">Все зарегистрированные владельцы</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Имя</th><th>Телефон</th><th>Станция</th><th>Статус</th><th>Дата</th>
+            </tr>
+          </thead>
+          <tbody id="owners-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Станция -->
+<div class="modal-overlay" id="station-modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Добавить станцию</div>
+    <div class="modal-inp-group">
+      <label class="modal-inp-label">НАЗВАНИЕ</label>
+      <input class="modal-inp" id="m-name" placeholder="Газ Актау 1"/>
+    </div>
+    <div class="modal-row">
+      <div class="modal-inp-group">
+        <label class="modal-inp-label">ШИРОТА</label>
+        <input class="modal-inp" id="m-lat" type="number" placeholder="43.65" step="0.001"/>
+      </div>
+      <div class="modal-inp-group">
+        <label class="modal-inp-label">ДОЛГОТА</label>
+        <input class="modal-inp" id="m-lon" type="number" placeholder="51.17" step="0.001"/>
+      </div>
+    </div>
+    <div class="modal-inp-group">
+      <label class="modal-inp-label">СТАТУС</label>
+      <select class="modal-inp" id="m-status">
+        <option value="green">🟢 Газ есть</option>
+        <option value="yellow">🟡 Газ мало</option>
+        <option value="red">🔴 Газа нет</option>
+        <option value="purple">🟣 Неизвестно</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Отмена</button>
+      <button class="btn-save" onclick="saveStation()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://nonconversationally-vestibular-pia.ngrok-free.dev';
+const H = () => ({ 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true', 'Authorization': `Bearer ${localStorage.getItem('admin_token')}` });
+
+let allStations = [], allUsers = [], editingStationId = null;
+
+async function doLogin() {
+  const phone = document.getElementById('inp-login').value;
+  const password = document.getElementById('inp-pass').value;
+  try {
+    const r = await fetch(`${API}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'ngrok-skip-browser-warning': 'true' },
+      body: new URLSearchParams({ username: phone, password })
+    });
+    const data = await r.json();
+    if (r.ok && data.role === 'admin') {
+      localStorage.setItem('admin_token', data.access_token);
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app-screen').style.display = 'block';
+      loadAll();
+    } else {
+      const el = document.getElementById('login-err');
+      el.style.display = 'block';
+      el.textContent = data.role !== 'admin' ? 'Нет прав администратора' : (data.detail || 'Ошибка входа');
+    }
+  } catch(e) { console.error(e); }
+}
+
+function doLogout() {
+  localStorage.removeItem('admin_token');
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-screen').style.display = 'none';
+}
+
+async function loadAll() {
+  await Promise.all([loadStats(), loadUsers(), loadStations()]);
+}
+
+async function loadStats() {
+  try {
+    const r = await fetch(`${API}/admin/stats`, { headers: H() });
+    const s = await r.json();
+    document.getElementById('stat-total').textContent = s.total_stations;
+    document.getElementById('stat-green').textContent = s.by_status.green;
+    document.getElementById('stat-users').textContent = s.approved_users;
+    document.getElementById('stat-pending').textContent = s.pending_users;
+
+    // Badge
+    const badge = document.getElementById('badge-count');
+    if (s.pending_users > 0) { badge.style.display = 'inline'; badge.textContent = s.pending_users; }
+    else badge.style.display = 'none';
+
+    // Bar chart
+    const total = s.total_stations || 1;
+    const bars = [
+      { label: '🟢 Есть', val: s.by_status.green, color: '#22c55e' },
+      { label: '🟡 Мало', val: s.by_status.yellow, color: '#eab308' },
+      { label: '🔴 Нет', val: s.by_status.red, color: '#ef4444' },
+      { label: '🟣 Неизв.', val: s.by_status.purple, color: '#a855f7' },
+    ];
+    document.getElementById('bar-chart').innerHTML = bars.map(b => `
+      <div class="bar-row">
+        <div class="bar-label">${b.label}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${(b.val/total*100).toFixed(0)}%;background:${b.color}"></div></div>
+        <div class="bar-val">${b.val}</div>
+      </div>`).join('');
+
+    // Donut
+    drawDonut(s.approved_users, s.pending_users);
+  } catch(e) { console.error(e); }
+}
+
+function drawDonut(approved, pending) {
+  const canvas = document.getElementById('donut-canvas');
+  const ctx = canvas.getContext('2d');
+  const total = approved + pending || 1;
+  const data = [
+    { val: approved, color: '#22c55e', label: 'Одобрены' },
+    { val: pending, color: '#eab308', label: 'Ожидают' },
+  ];
+  ctx.clearRect(0, 0, 120, 120);
+  let start = -Math.PI / 2;
+  data.forEach(d => {
+    const slice = (d.val / total) * 2 * Math.PI;
+    ctx.beginPath();
+    ctx.moveTo(60, 60);
+    ctx.arc(60, 60, 50, start, start + slice);
+    ctx.closePath();
+    ctx.fillStyle = d.color;
+    ctx.fill();
+    start += slice;
+  });
+  ctx.beginPath();
+  ctx.arc(60, 60, 30, 0, 2 * Math.PI);
+  ctx.fillStyle = 'white';
+  ctx.fill();
+  ctx.fillStyle = '#1a1a2e';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(approved + pending, 60, 65);
+
+  document.getElementById('donut-legend').innerHTML = data.map(d => `
+    <div class="legend-row">
+      <div class="legend-dot" style="background:${d.color}"></div>
+      <span>${d.label}: <b>${d.val}</b></span>
+    </div>`).join('');
+}
+
+async function loadUsers() {
+  try {
+    const r = await fetch(`${API}/admin/users`, { headers: H() });
+    allUsers = await r.json();
+    renderRequests();
+    renderOwners();
+  } catch(e) { console.error(e); }
+}
+
+function renderRequests() {
+  const pending = allUsers.filter(u => !u.is_approved);
+  document.getElementById('requests-tbody').innerHTML = pending.length === 0
+    ? `<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:32px">Новых заявок нет ✅</td></tr>`
+    : pending.map(u => `
+      <tr>
+        <td><b>${u.name}</b></td>
+        <td>${u.phone}</td>
+        <td>${u.station_name || '—'}</td>
+        <td style="color:#9ca3af;font-size:12px">${u.created_at?.slice(0,10)}</td>
+        <td>
+          <button class="action-btn btn-approve" onclick="approveUser(${u.id})">✅ Одобрить</button>
+          <button class="action-btn btn-reject" onclick="rejectUser(${u.id})">❌ Отклонить</button>
+        </td>
+      </tr>`).join('');
+}
+
+function renderOwners() {
+  const owners = allUsers.filter(u => u.is_approved);
+  document.getElementById('owners-tbody').innerHTML = owners.length === 0
+    ? `<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:32px">Нет одобренных владельцев</td></tr>`
+    : owners.map(u => `
+      <tr>
+        <td><b>${u.name}</b></td>
+        <td>${u.phone}</td>
+        <td>${u.station_name || '—'}</td>
+        <td><span class="badge badge-approved">Одобрен</span></td>
+        <td style="color:#9ca3af;font-size:12px">${u.created_at?.slice(0,10)}</td>
+      </tr>`).join('');
+}
+
+async function approveUser(id) {
+  await fetch(`${API}/admin/users/${id}/approve`, { method: 'POST', headers: H() });
+  showToast('✅ Пользователь одобрен', 'success');
+  loadAll();
+}
+
+async function rejectUser(id) {
+  if (!confirm('Отклонить заявку?')) return;
+  await fetch(`${API}/admin/users/${id}/reject`, { method: 'POST', headers: H() });
+  showToast('❌ Заявка отклонена', 'error');
+  loadAll();
+}
+
+async function loadStations() {
+  try {
+    const r = await fetch(`${API}/stations`, { headers: { 'ngrok-skip-browser-warning': 'true' } });
+    allStations = await r.json();
+    renderStations(allStations);
+  } catch(e) { console.error(e); }
+}
+
+const statusLabel = { green:'🟢 Есть', yellow:'🟡 Мало', red:'🔴 Нет', purple:'🟣 Неизв.' };
+const statusBadge = { green:'badge-green', yellow:'badge-yellow', red:'badge-red', purple:'badge-purple' };
+
+function renderStations(stations) {
+  document.getElementById('stations-tbody').innerHTML = stations.map(s => `
+    <tr>
+      <td><b>${s.name}</b></td>
+      <td style="font-size:12px;color:#9ca3af">${s.lat.toFixed(4)}, ${s.lon.toFixed(4)}</td>
+      <td><span class="badge ${statusBadge[s.status]||'badge-purple'}">${statusLabel[s.status]||s.status}</span></td>
+      <td>${s.hasOwner ? '<span class="badge badge-approved">Есть</span>' : '<span style="color:#9ca3af">—</span>'}</td>
+      <td style="font-size:12px;color:#9ca3af">${s.lastUpdated?.slice(0,16).replace('T',' ')}</td>
+      <td>
+        <button class="action-btn btn-edit" onclick="openEditStation(${s.id})">✏️ Изменить</button>
+        <button class="action-btn btn-delete" onclick="deleteStation(${s.id})">🗑️ Удалить</button>
+      </td>
+    </tr>`).join('');
+}
+
+function filterStations(q) {
+  renderStations(allStations.filter(s => s.name.toLowerCase().includes(q.toLowerCase())));
+}
+
+function openAddStation() {
+  editingStationId = null;
+  document.getElementById('modal-title').textContent = 'Добавить станцию';
+  document.getElementById('m-name').value = '';
+  document.getElementById('m-lat').value = '';
+  document.getElementById('m-lon').value = '';
+  document.getElementById('m-status').value = 'purple';
+  document.getElementById('station-modal').classList.add('open');
+}
+
+function openEditStation(id) {
+  const s = allStations.find(x => x.id === id);
+  if (!s) return;
+  editingStationId = id;
+  document.getElementById('modal-title').textContent = 'Редактировать станцию';
+  document.getElementById('m-name').value = s.name;
+  document.getElementById('m-lat').value = s.lat;
+  document.getElementById('m-lon').value = s.lon;
+  document.getElementById('m-status').value = s.status;
+  document.getElementById('station-modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('station-modal').classList.remove('open'); }
+
+async function saveStation() {
+  const body = {
+    name: document.getElementById('m-name').value,
+    lat: parseFloat(document.getElementById('m-lat').value),
+    lon: parseFloat(document.getElementById('m-lon').value),
+    status: document.getElementById('m-status').value,
+  };
+  if (!body.name || !body.lat || !body.lon) { showToast('Заполните все поля', 'error'); return; }
+  try {
+    let r;
+    if (editingStationId) {
+      r = await fetch(`${API}/admin/stations/${editingStationId}`, { method: 'PUT', headers: H(), body: JSON.stringify(body) });
+    } else {
+      r = await fetch(`${API}/stations`, { method: 'POST', headers: H(), body: JSON.stringify(body) });
+    }
+    if (r.ok) {
+      closeModal();
+      showToast(editingStationId ? '✅ Станция обновлена' : '✅ Станция добавлена', 'success');
+      loadAll();
+    }
+  } catch(e) { console.error(e); }
+}
+
+async function deleteStation(id) {
+  if (!confirm('Удалить станцию?')) return;
+  await fetch(`${API}/admin/stations/${id}`, { method: 'DELETE', headers: H() });
+  showToast('🗑️ Станция удалена', 'error');
+  loadAll();
+}
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+function showToast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// Проверяем токен при загрузке
+window.onload = () => {
+  const token = localStorage.getItem('admin_token');
+  if (token) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-screen').style.display = 'block';
+    loadAll();
+  }
+};
+
+document.getElementById('inp-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+</script>
+</body>
+</html>

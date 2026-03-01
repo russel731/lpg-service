@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>АГЗС Мониторинг</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    :root {
+      --green: #22c55e; --green-dark: #16a34a; --yellow: #eab308;
+      --red: #ef4444; --purple: #a855f7; --blue: #3b82f6;
+      --bg: #f0f4f8; --card: #ffffff; --text: #0f172a; --muted: #94a3b8;
+      --nav-h: 64px;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+
+    #welcome-screen { position: fixed; inset: 0; z-index: 9999; background: linear-gradient(160deg, #0f0c29, #302b63, #24243e); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; }
+    .w-logo { width: 96px; height: 96px; border-radius: 28px; background: linear-gradient(135deg, #22c55e, #16a34a); display: flex; align-items: center; justify-content: center; font-size: 48px; margin-bottom: 20px; box-shadow: 0 12px 40px rgba(34,197,94,0.4); animation: logoPulse 2s ease-in-out infinite; }
+    @keyframes logoPulse { 0%,100%{box-shadow:0 12px 40px rgba(34,197,94,0.4)} 50%{box-shadow:0 12px 60px rgba(34,197,94,0.7)} }
+    .w-title { font-size: 28px; font-weight: 900; color: white; text-align: center; margin-bottom: 6px; letter-spacing: -0.5px; }
+    .w-sub { font-size: 14px; color: rgba(255,255,255,0.5); text-align: center; margin-bottom: 40px; }
+    .lang-row { display: flex; gap: 10px; margin-bottom: 36px; }
+    .lang-btn { flex: 1; padding: 13px 20px; border-radius: 14px; border: 1.5px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.25s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .lang-btn.selected { border-color: var(--green); background: rgba(34,197,94,0.15); color: white; }
+    .w-choose { font-size: 11px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 14px; }
+    .role-cards { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; }
+    .role-card { padding: 18px 20px; border-radius: 18px; border: 1.5px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.05); cursor: pointer; transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1); display: flex; align-items: center; gap: 16px; backdrop-filter: blur(10px); }
+    .role-card:active { transform: scale(0.96); }
+    .role-card.driver:hover { border-color: rgba(59,130,246,0.5); background: rgba(59,130,246,0.1); }
+    .role-card.owner:hover { border-color: rgba(34,197,94,0.5); background: rgba(34,197,94,0.1); }
+    .role-ico { width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 26px; }
+    .role-card.driver .role-ico { background: rgba(59,130,246,0.2); }
+    .role-card.owner .role-ico { background: rgba(34,197,94,0.2); }
+    .role-info { flex: 1; }
+    .role-name { font-size: 16px; font-weight: 700; color: white; margin-bottom: 2px; }
+    .role-desc { font-size: 12px; color: rgba(255,255,255,0.4); }
+    .role-arr { color: rgba(255,255,255,0.2); font-size: 20px; }
+
+    #app { height: 100vh; flex-direction: column; display: none; opacity: 0; transition: opacity 0.4s ease; }
+
+    .nav { display: flex; background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-top: 1px solid rgba(0,0,0,0.06); position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-h); z-index: 1000; padding: 0 8px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); }
+    .nav-btn { flex: 1; border: none; background: transparent; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--muted); transition: all 0.25s; border-radius: 14px; margin: 6px 2px; position: relative; }
+    .nav-btn.active { color: var(--green); }
+    .nav-btn.active::before { content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 3px; background: var(--green); border-radius: 0 0 4px 4px; }
+    .nav-ico { font-size: 24px; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+    .nav-btn.active .nav-ico { transform: scale(1.15); }
+    .nav-txt { font-size: 10px; font-weight: 600; }
+
+    .screen { display: none; height: calc(100vh - var(--nav-h)); overflow-y: auto; }
+    .screen.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+    #map { width: 100%; height: calc(100vh - var(--nav-h)); }
+    .map-legend { position: absolute; bottom: 80px; left: 12px; z-index: 1000; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 14px; padding: 10px 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); font-size: 12px; }
+    .legend-item { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; font-weight: 500; }
+    .legend-item:last-child { margin-bottom: 0; }
+    .legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .locate-btn { position: absolute; bottom: 80px; right: 12px; z-index: 1000; background: white; border: none; border-radius: 14px; width: 48px; height: 48px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+    .locate-btn:active { transform: scale(0.92); }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .locate-btn.loading { animation: spin 1s linear infinite; }
+    .update-indicator { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 1000; background: rgba(15,12,41,0.85); backdrop-filter: blur(10px); color: white; font-size: 11px; font-weight: 600; padding: 6px 14px; border-radius: 20px; display: flex; align-items: center; gap: 6px; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+    .update-indicator.show { opacity: 1; }
+    .update-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: blink 1s ease-in-out infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .nearest-banner { position: absolute; top: 12px; left: 12px; right: 12px; z-index: 1000; background: rgba(255,255,255,0.97); backdrop-filter: blur(16px); border-radius: 16px; padding: 14px 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); display: none; }
+    @keyframes slideDown { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
+    .nearest-banner.show { display: block; animation: slideDown 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+
+    .list-top { padding: 20px 16px 12px; background: white; position: sticky; top: 0; z-index: 10; border-bottom: 1px solid rgba(0,0,0,0.05); }
+    .list-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .list-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+    .list-updated { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+    .list-updated-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+    .search-wrap { position: relative; margin-bottom: 10px; }
+    .search-ico { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); font-size: 15px; color: var(--muted); pointer-events: none; }
+    .search-inp { width: 100%; padding: 11px 36px 11px 38px; border: 1.5px solid #e2e8f0; border-radius: 14px; font-size: 14px; outline: none; background: #f8fafc; transition: all 0.2s; color: var(--text); }
+    .search-inp:focus { border-color: var(--green); background: white; box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
+    .search-clear { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: var(--muted); color: white; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; cursor: pointer; display: none; align-items: center; justify-content: center; font-weight: 700; }
+    .search-clear.show { display: flex; }
+    .filter-chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+    .filter-chips::-webkit-scrollbar { display: none; }
+    .chip { padding: 6px 14px; border-radius: 20px; border: 1.5px solid #e2e8f0; background: white; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s; color: var(--muted); }
+    .chip.active { background: var(--green); border-color: var(--green); color: white; }
+
+    .station-list { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+    .s-card { background: white; border-radius: 18px; padding: 16px; display: flex; align-items: center; gap: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); transition: transform 0.2s; border: 1.5px solid transparent; cursor: pointer; }
+    .s-card:active { transform: scale(0.98); }
+    .s-card.nearest { border-color: var(--green); box-shadow: 0 4px 20px rgba(34,197,94,0.15); }
+    .s-status-ico { width: 48px; height: 48px; border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+    .s-info { flex: 1; min-width: 0; }
+    .s-name { font-weight: 700; font-size: 15px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .s-name mark { background: rgba(34,197,94,0.2); color: var(--green-dark); border-radius: 3px; padding: 0 2px; }
+    .s-meta { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .s-dist { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; }
+    .s-arrow { color: #cbd5e1; font-size: 18px; }
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty-ico { font-size: 48px; margin-bottom: 12px; }
+    .empty-txt { font-size: 16px; font-weight: 600; margin-bottom: 6px; color: #64748b; }
+    .empty-sub { font-size: 13px; }
+
+    /* ДЕТАЛЬНЫЙ ЭКРАН */
+    .detail-screen { position: fixed; inset: 0; z-index: 5000; background: var(--bg); transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.32,0.72,0,1); overflow-y: auto; }
+    .detail-screen.open { transform: translateY(0); }
+    .detail-header { position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,0.95); backdrop-filter: blur(16px); padding: 16px 20px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid rgba(0,0,0,0.06); }
+    .back-btn { width: 38px; height: 38px; border-radius: 12px; background: #f1f5f9; border: none; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .detail-header-title { font-size: 17px; font-weight: 800; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .detail-body { padding: 20px 16px; }
+    .detail-hero { border-radius: 24px; padding: 28px 24px; margin-bottom: 16px; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; overflow: hidden; }
+    .detail-hero-ico { font-size: 56px; margin-bottom: 12px; }
+    .detail-hero-status { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+    .detail-hero-name { font-size: 14px; opacity: 0.6; }
+    .detail-card { background: white; border-radius: 18px; padding: 20px; margin-bottom: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .detail-row { display: flex; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+    .detail-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .detail-row-ico { font-size: 20px; width: 32px; text-align: center; flex-shrink: 0; }
+    .detail-row-info { flex: 1; }
+    .detail-row-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .detail-row-val { font-size: 15px; font-weight: 600; margin-top: 1px; }
+
+    /* КНОПКА ПОДПИСКИ */
+    .notify-btn {
+      width: 100%; padding: 16px; border: none; border-radius: 16px;
+      font-size: 16px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      transition: all 0.2s; margin-bottom: 10px;
+    }
+    .notify-btn:active { transform: scale(0.98); }
+    .notify-btn.off { background: #f1f5f9; color: #475569; }
+    .notify-btn.on { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; box-shadow: 0 4px 20px rgba(245,158,11,0.35); }
+    .notify-no-tg { background: #fef9c3; color: #92400e; padding: 12px 16px; border-radius: 14px; font-size: 13px; margin-bottom: 10px; text-align: center; display: none; }
+
+    .share-btn { width: 100%; padding: 16px; border: none; border-radius: 16px; background: linear-gradient(135deg, #2AABEE, #229ED9); color: white; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 20px rgba(42,171,238,0.35); transition: all 0.2s; margin-bottom: 10px; }
+    .share-btn:active { transform: scale(0.98); }
+    .maps-btn { width: 100%; padding: 16px; border: none; border-radius: 16px; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 20px rgba(34,197,94,0.3); transition: all 0.2s; }
+    .maps-btn:active { transform: scale(0.98); }
+
+    .owner-wrap { padding: 20px 16px; }
+    .panel-hero { background: linear-gradient(135deg, #0f0c29, #302b63); border-radius: 22px; padding: 24px; margin-bottom: 16px; color: white; position: relative; overflow: hidden; }
+    .panel-hero::before { content: '⛽'; position: absolute; right: -10px; bottom: -20px; font-size: 100px; opacity: 0.08; }
+    .panel-hero h2 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+    .panel-hero p { font-size: 13px; opacity: 0.5; }
+    .o-card { background: white; border-radius: 18px; padding: 20px; margin-bottom: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .o-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; display: block; }
+    .o-input { width: 100%; padding: 13px 14px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 15px; outline: none; transition: all 0.2s; background: #f8fafc; }
+    .o-input:focus { border-color: var(--green); background: white; box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
+    .o-group { margin-bottom: 14px; }
+    .o-btn { width: 100%; padding: 15px; border: none; border-radius: 14px; font-size: 15px; font-weight: 700; cursor: pointer; margin-bottom: 10px; transition: all 0.2s; }
+    .o-btn:active { transform: scale(0.98); }
+    .o-btn-primary { background: linear-gradient(135deg, var(--green), var(--green-dark)); color: white; box-shadow: 0 4px 16px rgba(34,197,94,0.3); }
+    .o-btn-yellow { background: linear-gradient(135deg, #eab308, #ca8a04); color: white; }
+    .o-btn-red { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+    .o-btn-outline { background: white; color: var(--green); border: 2px solid var(--green); }
+    .o-btn-gray { background: #f1f5f9; color: #64748b; }
+    .status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 50px; font-weight: 700; font-size: 15px; margin-bottom: 8px; }
+    .status-dot-lg { width: 12px; height: 12px; border-radius: 50%; }
+    .success-msg { background: #f0fdf4; color: #166634; padding: 12px 14px; border-radius: 12px; font-size: 14px; margin-bottom: 10px; border: 1px solid #bbf7d0; }
+    .error-msg { background: #fef2f2; color: #991b1b; padding: 12px 14px; border-radius: 12px; font-size: 14px; margin-bottom: 10px; border: 1px solid #fecaca; }
+    .tabs-row { display: flex; background: #f1f5f9; border-radius: 12px; padding: 3px; margin-bottom: 16px; }
+    .tab-btn { flex: 1; padding: 9px; border: none; background: transparent; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--muted); border-radius: 10px; transition: all 0.2s; }
+    .tab-btn.active { background: white; color: var(--green); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .divider { height: 1px; background: #f1f5f9; margin: 14px 0; }
+  </style>
+</head>
+<body>
+
+<div id="welcome-screen">
+  <div class="w-logo">⛽</div>
+  <div class="w-title">АГЗС Мониторинг</div>
+  <div class="w-sub" id="city-sub">Қазақстан · Kazakhstan</div>
+  <div class="lang-row">
+    <button class="lang-btn selected" id="btn-kz" onclick="selectLang('kz')">🇰🇿 Қазақша</button>
+    <button class="lang-btn" id="btn-ru" onclick="selectLang('ru')">🇷🇺 Русский</button>
+  </div>
+  <div class="w-choose" id="w-choose">КІМ ЕКЕНІҢІЗДІ ТАҢДАҢЫЗ</div>
+  <div class="role-cards">
+    <div class="role-card driver" onclick="enterAs('driver')">
+      <div class="role-ico">🚗</div>
+      <div class="role-info">
+        <div class="role-name" id="r-driver">Мен жүргізушімін</div>
+        <div class="role-desc" id="r-driver-desc">Жақын АГЗС-ті іздеу</div>
+      </div>
+      <div class="role-arr">›</div>
+    </div>
+    <div class="role-card owner" onclick="enterAs('owner')">
+      <div class="role-ico">⛽</div>
+      <div class="role-info">
+        <div class="role-name" id="r-owner">Мен иесімін</div>
+        <div class="role-desc" id="r-owner-desc">Станцияны басқару</div>
+      </div>
+      <div class="role-arr">›</div>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+  <div id="map-screen" class="screen active" style="position:relative">
+    <div id="map"></div>
+    <div class="nearest-banner" id="nearest-banner"></div>
+    <div class="map-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div><span id="leg-green">Газ бар</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#eab308"></div><span id="leg-yellow">Газ аз</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div><span id="leg-red">Газ жоқ</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div><span id="leg-purple">Белгісіз</span></div>
+    </div>
+    <button class="locate-btn" id="locate-btn" onclick="locateUser()">📍</button>
+    <div class="update-indicator" id="update-indicator">
+      <div class="update-dot"></div>
+      <span id="update-txt">Обновление...</span>
+    </div>
+  </div>
+
+  <div id="list-screen" class="screen">
+    <div class="list-top">
+      <div class="list-top-row">
+        <div class="list-title" id="list-title">⛽ АГЗС</div>
+        <div class="list-updated"><div class="list-updated-dot"></div><span id="list-updated-txt">—</span></div>
+      </div>
+      <div class="search-wrap">
+        <span class="search-ico">🔍</span>
+        <input class="search-inp" id="search-inp" type="text" placeholder="Поиск станции..." oninput="onSearch(this.value)"/>
+        <button class="search-clear" id="search-clear" onclick="clearSearch()">✕</button>
+      </div>
+      <div class="filter-chips">
+        <div class="chip active" id="f-all" onclick="filterStatus('all')">Все</div>
+        <div class="chip" id="f-green" onclick="filterStatus('green')">🟢 Есть</div>
+        <div class="chip" id="f-yellow" onclick="filterStatus('yellow')">🟡 Мало</div>
+        <div class="chip" id="f-red" onclick="filterStatus('red')">🔴 Нет</div>
+      </div>
+    </div>
+    <div class="station-list" id="station-list"></div>
+  </div>
+
+  <div id="owner-screen" class="screen">
+    <div class="owner-wrap">
+      <div id="login-panel">
+        <div class="panel-hero">
+          <h2>🔑 <span id="login-title">Кабинет</span></h2>
+          <p id="login-sub">Кіру үшін деректеріңізді енгізіңіз</p>
+        </div>
+        <div class="o-card">
+          <div class="o-group"><label class="o-label" id="lbl-phone">ТЕЛЕФОН</label><input class="o-input" id="inp-phone" type="text" placeholder="+7 777 123 45 67"/></div>
+          <div class="o-group"><label class="o-label" id="lbl-pass">ПАРОЛЬ</label><input class="o-input" id="inp-password" type="password" placeholder="••••••••"/></div>
+          <div id="login-error" style="display:none" class="error-msg"></div>
+          <button class="o-btn o-btn-primary" onclick="doLogin()" id="btn-login">Кіру</button>
+          <button class="o-btn o-btn-outline" onclick="showRegister()" id="btn-register">Тіркелу</button>
+        </div>
+      </div>
+      <div id="register-panel" style="display:none">
+        <div class="panel-hero">
+          <h2>📝 <span id="reg-title">Тіркелу</span></h2>
+          <p id="reg-sub">Станция иесі ретінде тіркелу</p>
+        </div>
+        <div class="o-card">
+          <div class="tabs-row">
+            <button class="tab-btn active" onclick="setRegTab('claim',this)"><span id="tab-claim-txt">Иелікті растау</span></button>
+            <button class="tab-btn" onclick="setRegTab('new',this)"><span id="tab-new-txt">Жаңа қосу</span></button>
+          </div>
+          <div class="o-group"><label class="o-label" id="lbl-name">АТЫ-ЖӨНІ</label><input class="o-input" id="reg-name" type="text"/></div>
+          <div class="o-group"><label class="o-label">ТЕЛЕФОН</label><input class="o-input" id="reg-phone" type="text"/></div>
+          <div class="o-group"><label class="o-label">ПАРОЛЬ</label><input class="o-input" id="reg-password" type="password"/></div>
+          <div id="reg-claim">
+            <div class="o-group"><label class="o-label" id="lbl-station">СТАНЦИЯ</label><select class="o-input" id="reg-station-select"><option value="">Таңдаңыз...</option></select></div>
+          </div>
+          <div id="reg-new" style="display:none">
+            <div class="o-group"><label class="o-label">СТАНЦИЯ АТЫ</label><input class="o-input" id="reg-station-name" type="text"/></div>
+            <div class="o-group">
+              <label class="o-label">КООРДИНАТТАР</label>
+              <input class="o-input" id="reg-lat" type="number" placeholder="43.65..." step="0.001"/>
+              <input class="o-input" id="reg-lon" type="number" placeholder="51.17..." step="0.001" style="margin-top:8px"/>
+            </div>
+          </div>
+          <div id="reg-error" style="display:none" class="error-msg"></div>
+          <div id="reg-success" style="display:none" class="success-msg"></div>
+          <button class="o-btn o-btn-primary" onclick="doRegister()" id="btn-send">Өтінім жіберу</button>
+          <button class="o-btn o-btn-gray" onclick="showLogin()" id="btn-back">← Артқа</button>
+        </div>
+      </div>
+      <div id="dashboard-panel" style="display:none">
+        <div class="panel-hero">
+          <h2 id="dash-title">📍 Менің станциям</h2>
+          <p id="my-station-name" style="font-size:17px;font-weight:800;margin-top:6px;opacity:1">—</p>
+        </div>
+        <div class="o-card">
+          <span class="o-label" id="dash-status-title">АҒЫМДАҒЫ СТАТУС</span>
+          <div class="status-pill" id="status-pill"><div class="status-dot-lg" id="my-status-dot"></div><span id="my-status-text"></span></div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:16px" id="my-last-updated"></div>
+          <div class="divider"></div>
+          <span class="o-label" id="dash-update-title" style="margin-bottom:12px">СТАТУСТЫ ЖАҢАРТУ</span>
+          <button class="o-btn o-btn-primary" onclick="setMyStatus('green')" id="dash-btn-green">🟢 Газ бар</button>
+          <button class="o-btn o-btn-yellow" onclick="setMyStatus('yellow')" id="dash-btn-yellow">🟡 Газ аз</button>
+          <button class="o-btn o-btn-red" onclick="setMyStatus('red')" id="dash-btn-red">🔴 Газ жоқ</button>
+          <div id="update-success" style="display:none" class="success-msg">✅ <span id="updated-txt">Статус жаңартылды!</span></div>
+        </div>
+        <button class="o-btn o-btn-gray" onclick="doLogout()" id="btn-logout" style="margin-top:4px">🚪 Шығу</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="nav-btn active" id="nav-map" onclick="showScreen('map-screen',0)">
+      <span class="nav-ico">🗺️</span><span class="nav-txt" id="nav-map-txt">Карта</span>
+    </button>
+    <button class="nav-btn" id="nav-list" onclick="showScreen('list-screen',1)">
+      <span class="nav-ico">📋</span><span class="nav-txt" id="nav-list-txt">Тізім</span>
+    </button>
+    <button class="nav-btn" id="nav-owner" onclick="showScreen('owner-screen',2)" style="display:none">
+      <span class="nav-ico">👤</span><span class="nav-txt" id="nav-owner-txt">Кабинет</span>
+    </button>
+  </div>
+</div>
+
+<!-- ДЕТАЛЬНЫЙ ЭКРАН -->
+<div class="detail-screen" id="detail-screen">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeDetail()">←</button>
+    <div class="detail-header-title" id="detail-header-title">АГЗС</div>
+  </div>
+  <div class="detail-body">
+    <div class="detail-hero" id="detail-hero">
+      <div class="detail-hero-ico" id="d-ico">⛽</div>
+      <div class="detail-hero-status" id="d-status">—</div>
+      <div class="detail-hero-name" id="d-name">—</div>
+    </div>
+    <div class="detail-card">
+      <div class="detail-row">
+        <div class="detail-row-ico">📍</div>
+        <div class="detail-row-info">
+          <div class="detail-row-label" id="d-lbl-coords">КООРДИНАТЫ</div>
+          <div class="detail-row-val" id="d-coords">—</div>
+        </div>
+      </div>
+      <div class="detail-row" id="d-dist-row">
+        <div class="detail-row-ico">📏</div>
+        <div class="detail-row-info">
+          <div class="detail-row-label" id="d-lbl-dist">РАССТОЯНИЕ</div>
+          <div class="detail-row-val" id="d-dist">—</div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-row-ico">🕐</div>
+        <div class="detail-row-info">
+          <div class="detail-row-label" id="d-lbl-updated">ОБНОВЛЕНО</div>
+          <div class="detail-row-val" id="d-updated">—</div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-row-ico">👤</div>
+        <div class="detail-row-info">
+          <div class="detail-row-label" id="d-lbl-owner">ВЛАДЕЛЕЦ</div>
+          <div class="detail-row-val" id="d-owner">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- КНОПКА УВЕДОМЛЕНИЯ -->
+    <div class="notify-no-tg" id="notify-no-tg">
+      ℹ️ Откройте через Telegram для получения уведомлений
+    </div>
+    <button class="notify-btn off" id="notify-btn" onclick="toggleSubscribe()">
+      <span id="notify-ico">🔔</span>
+      <span id="notify-txt">Уведомить меня</span>
+    </button>
+
+    <button class="share-btn" onclick="shareStation()">
+      <span style="font-size:20px">✈️</span>
+      <span id="d-share-txt">Поделиться в Telegram</span>
+    </button>
+    <button class="maps-btn" onclick="openMaps()">
+      <span style="font-size:20px">🗺️</span>
+      <span id="d-maps-txt">Открыть в картах</span>
+    </button>
+  </div>
+</div>
+
+<script>
+const API = 'https://nonconversationally-vestibular-pia.ngrok-free.dev';
+const H = { 'ngrok-skip-browser-warning': 'true' };
+
+let lang='kz', allStations=[], currentFilter='all', searchQuery='';
+let map, markers=[], userMarker=null;
+let userLat=null, userLon=null, token=localStorage.getItem('tg_token');
+let myUser=null, myStation=null, regTab='claim';
+let autoUpdateInterval=null, lastUpdated=null;
+let currentDetailStation=null, isSubscribed=false;
+
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+const tgUser = tg?.initDataUnsafe?.user;
+const myTgId = tgUser?.id || null;
+
+const statusColors = { green:'#22c55e', yellow:'#eab308', red:'#ef4444', purple:'#a855f7' };
+const statusBg = { green:'rgba(34,197,94,0.12)', yellow:'rgba(234,179,8,0.12)', red:'rgba(239,68,68,0.12)', purple:'rgba(168,85,247,0.12)' };
+const statusIco = { green:'🟢', yellow:'🟡', red:'🔴', purple:'🟣' };
+
+const T = {
+  kz: { map:'Карта',list:'Тізім',cabinet:'Кабинет',legGreen:'Газ бар',legYellow:'Газ аз',legRed:'Газ жоқ',legPurple:'Белгісіз',sGreen:'Газ бар',sYellow:'Газ аз',sRed:'Газ жоқ',sPurple:'Белгісіз',loginTitle:'Кабинет',loginSub:'Кіру үшін деректеріңізді енгізіңіз',phone:'ТЕЛЕФОН',pass:'ПАРОЛЬ',login:'Кіру',register:'Тіркелу',regTitle:'Тіркелу',regSub:'Станция иесі ретінде тіркелу',tabClaim:'Иелікті растау',tabNew:'Жаңа қосу',name:'АТЫ-ЖӨНІ',station:'СТАНЦИЯ',send:'Өтінім жіберу',back:'← Артқа',dashTitle:'📍 Менің станциям',curStatus:'АҒЫМДАҒЫ СТАТУС',updateStatus:'СТАТУСТЫ ЖАҢАРТУ',btnGreen:'🟢 Газ бар',btnYellow:'🟡 Газ аз',btnRed:'🔴 Газ жоқ',updated:'Статус жаңартылды!',logout:'🚪 Шығу',choose:'КІМ ЕКЕНІҢІЗДІ ТАҢДАҢЫЗ',rDriver:'Мен жүргізушімін',rDriverD:'Жақын АГЗС-ті іздеу',rOwner:'Мен иесімін',rOwnerD:'Станцияны басқару',success:'✅ Өтінім жіберілді!',errSt:'Станцияны таңдаңыз',nearest:'Жақын станция',km:'км',justNow:'Қазір',secAgo:'сек бұрын',minAgo:'мин бұрын',searchPlaceholder:'Станция іздеу...',noResults:'Станция табылмады',noResultsSub:'Іздеуді өзгертіп көріңіз',coords:'КООРДИНАТТАР',distance:'ҚАШЫҚТЫҚ',updatedLbl:'ЖАҢАРТЫЛДЫ',ownerLbl:'ИЕ',hasOwner:'Иесі бар',noOwner:'Иесі жоқ',shareTg:'Telegram-да бөлісу',openMaps:'Картада ашу',notifyOn:'🔔 Хабарландыру қосылды',notifyOff:'🔕 Хабарландыруды өшіру',notifyNoTg:'Хабарландыру алу үшін Telegram арқылы ашыңыз'},
+  ru: { map:'Карта',list:'Список',cabinet:'Кабинет',legGreen:'Газ есть',legYellow:'Газ мало',legRed:'Газа нет',legPurple:'Неизвестно',sGreen:'Газ есть',sYellow:'Газ мало',sRed:'Газа нет',sPurple:'Неизвестно',loginTitle:'Кабинет',loginSub:'Введите данные для входа',phone:'ТЕЛЕФОН',pass:'ПАРОЛЬ',login:'Войти',register:'Зарегистрироваться',regTitle:'Регистрация',regSub:'Регистрация как владелец',tabClaim:'Подтвердить владение',tabNew:'Добавить новую',name:'ИМЯ',station:'СТАНЦИЯ',send:'Отправить заявку',back:'← Назад',dashTitle:'📍 Моя станция',curStatus:'ТЕКУЩИЙ СТАТУС',updateStatus:'ОБНОВИТЬ СТАТУС',btnGreen:'🟢 Газ есть',btnYellow:'🟡 Газ мало',btnRed:'🔴 Газа нет',updated:'Статус обновлён!',logout:'🚪 Выйти',choose:'ВЫБЕРИТЕ КТО ВЫ',rDriver:'Я водитель',rDriverD:'Найти ближайшую АГЗС',rOwner:'Я владелец АГЗС',rOwnerD:'Управление станцией',success:'✅ Заявка отправлена!',errSt:'Выберите станцию',nearest:'Ближайшая станция',km:'км',justNow:'Только что',secAgo:'сек назад',minAgo:'мин назад',searchPlaceholder:'Поиск станции...',noResults:'Станции не найдены',noResultsSub:'Попробуйте изменить запрос',coords:'КООРДИНАТЫ',distance:'РАССТОЯНИЕ',updatedLbl:'ОБНОВЛЕНО',ownerLbl:'ВЛАДЕЛЕЦ',hasOwner:'Есть владелец',noOwner:'Нет владельца',shareTg:'Поделиться в Telegram',openMaps:'Открыть в картах',notifyOn:'🔔 Уведомить меня',notifyOff:'🔕 Отписаться',notifyNoTg:'Откройте через Telegram для уведомлений'}
+};
+const t = k => T[lang][k] || k;
+
+function calcDist(la1,lo1,la2,lo2){const R=6371,dL=(la2-la1)*Math.PI/180,dO=(lo2-lo1)*Math.PI/180,a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dO/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+
+function timeAgo(date){
+  const sec=Math.floor((new Date()-date)/1000);
+  if(sec<10) return t('justNow');
+  if(sec<60) return `${sec} ${t('secAgo')}`;
+  return `${Math.floor(sec/60)} ${t('minAgo')}`;
+}
+
+function highlightText(text,query){
+  if(!query) return text;
+  const idx=text.toLowerCase().indexOf(query.toLowerCase());
+  if(idx===-1) return text;
+  return text.slice(0,idx)+`<mark>${text.slice(idx,idx+query.length)}</mark>`+text.slice(idx+query.length);
+}
+
+if(navigator.geolocation){
+  navigator.geolocation.getCurrentPosition(pos=>{
+    userLat=pos.coords.latitude; userLon=pos.coords.longitude; updateCity();
+  },()=>{},{enableHighAccuracy:false,timeout:5000});
+}
+
+async function updateCity(){
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${userLat}&lon=${userLon}&format=json&accept-language=ru`);
+    const d=await r.json();
+    const city=d.address?.city||d.address?.town||d.address?.village||'';
+    if(city) document.getElementById('city-sub').textContent=city+' · Қазақстан';
+  }catch(e){}
+}
+
+function selectLang(l){
+  lang=l;
+  document.getElementById('btn-kz').classList.toggle('selected',l==='kz');
+  document.getElementById('btn-ru').classList.toggle('selected',l==='ru');
+  document.getElementById('w-choose').textContent=t('choose');
+  document.getElementById('r-driver').textContent=t('rDriver');
+  document.getElementById('r-driver-desc').textContent=t('rDriverD');
+  document.getElementById('r-owner').textContent=t('rOwner');
+  document.getElementById('r-owner-desc').textContent=t('rOwnerD');
+}
+
+function applyLang(){
+  const ids={'nav-map-txt':'map','nav-list-txt':'list','nav-owner-txt':'cabinet','leg-green':'legGreen','leg-yellow':'legYellow','leg-red':'legRed','leg-purple':'legPurple','login-title':'loginTitle','login-sub':'loginSub','lbl-phone':'phone','lbl-pass':'pass','btn-login':'login','btn-register':'register','reg-title':'regTitle','reg-sub':'regSub','tab-claim-txt':'tabClaim','tab-new-txt':'tabNew','lbl-name':'name','lbl-station':'station','btn-send':'send','btn-back':'back','dash-title':'dashTitle','dash-status-title':'curStatus','dash-update-title':'updateStatus','dash-btn-green':'btnGreen','dash-btn-yellow':'btnYellow','dash-btn-red':'btnRed','updated-txt':'updated','btn-logout':'logout'};
+  Object.entries(ids).forEach(([id,k])=>{const el=document.getElementById(id);if(el)el.textContent=t(k);});
+  document.getElementById('search-inp').placeholder=t('searchPlaceholder');
+}
+
+function enterAs(role){
+  const welcome=document.getElementById('welcome-screen');
+  const app=document.getElementById('app');
+  welcome.style.transition='opacity 0.5s ease, transform 0.5s ease';
+  welcome.style.opacity='0'; welcome.style.transform='scale(1.08)'; welcome.style.pointerEvents='none';
+  app.style.display='flex'; app.style.opacity='0'; app.style.transition='opacity 0.4s ease';
+  setTimeout(()=>{
+    welcome.style.display='none';
+    requestAnimationFrame(()=>{ app.style.opacity='1'; });
+    setTimeout(()=>{ initMap(); if(map) map.invalidateSize(); },100);
+  },500);
+  if(role==='owner') document.getElementById('nav-owner').style.display='flex';
+  else document.getElementById('nav-owner').style.display='none';
+  applyLang(); loadStations(); startAutoUpdate();
+}
+
+// ═══ ПОДПИСКА ═══
+async function checkSubscription(stationId){
+  if(!myTgId){ document.getElementById('notify-no-tg').style.display='block'; document.getElementById('notify-btn').style.display='none'; return; }
+  document.getElementById('notify-no-tg').style.display='none';
+  document.getElementById('notify-btn').style.display='flex';
+  try{
+    const r=await fetch(`${API}/subscribe/check?telegram_id=${myTgId}&station_id=${stationId}`,{headers:H});
+    const d=await r.json();
+    isSubscribed=d.subscribed;
+    updateNotifyBtn();
+  }catch(e){ isSubscribed=false; updateNotifyBtn(); }
+}
+
+function updateNotifyBtn(){
+  const btn=document.getElementById('notify-btn');
+  const ico=document.getElementById('notify-ico');
+  const txt=document.getElementById('notify-txt');
+  if(isSubscribed){
+    btn.className='notify-btn on';
+    ico.textContent='🔕';
+    txt.textContent=t('notifyOff');
+  } else {
+    btn.className='notify-btn off';
+    ico.textContent='🔔';
+    txt.textContent=t('notifyOn');
+  }
+}
+
+async function toggleSubscribe(){
+  if(!myTgId||!currentDetailStation) return;
+  try{
+    const r=await fetch(`${API}/subscribe`,{method:'POST',headers:{...H,'Content-Type':'application/json'},body:JSON.stringify({telegram_id:myTgId,station_id:currentDetailStation.id})});
+    const d=await r.json();
+    isSubscribed=d.subscribed;
+    updateNotifyBtn();
+  }catch(e){console.error(e);}
+}
+
+// ═══ ДЕТАЛЬНЫЙ ЭКРАН ═══
+async function openDetail(stationId){
+  const s=allStations.find(x=>x.id===stationId);
+  if(!s) return;
+  currentDetailStation=s;
+  const color=statusColors[s.status]||'#a855f7';
+  const sk={green:'sGreen',yellow:'sYellow',red:'sRed',purple:'sPurple'};
+
+  document.getElementById('detail-header-title').textContent=s.name;
+  document.getElementById('d-ico').textContent=statusIco[s.status]||'🟣';
+  document.getElementById('d-status').textContent=t(sk[s.status]||'sPurple');
+  document.getElementById('d-name').textContent=s.name;
+  document.getElementById('d-coords').textContent=`${s.lat.toFixed(5)}, ${s.lon.toFixed(5)}`;
+  document.getElementById('d-updated').textContent=s.lastUpdated?.slice(0,16).replace('T',' ')||'—';
+  document.getElementById('d-owner').textContent=s.hasOwner?t('hasOwner'):t('noOwner');
+  document.getElementById('d-lbl-coords').textContent=t('coords');
+  document.getElementById('d-lbl-dist').textContent=t('distance');
+  document.getElementById('d-lbl-updated').textContent=t('updatedLbl');
+  document.getElementById('d-lbl-owner').textContent=t('ownerLbl');
+  document.getElementById('d-share-txt').textContent=t('shareTg');
+  document.getElementById('d-maps-txt').textContent=t('openMaps');
+
+  const hero=document.getElementById('detail-hero');
+  hero.style.background=statusBg[s.status]||'rgba(168,85,247,0.12)';
+  document.getElementById('d-status').style.color=color;
+
+  const distRow=document.getElementById('d-dist-row');
+  if(userLat&&userLon){
+    document.getElementById('d-dist').textContent=`${calcDist(userLat,userLon,s.lat,s.lon).toFixed(1)} ${t('km')}`;
+    distRow.style.display='flex';
+  } else { distRow.style.display='none'; }
+
+  document.getElementById('detail-screen').classList.add('open');
+  await checkSubscription(stationId);
+}
+
+function closeDetail(){
+  document.getElementById('detail-screen').classList.remove('open');
+  currentDetailStation=null;
+}
+
+function shareStation(){
+  if(!currentDetailStation) return;
+  const s=currentDetailStation;
+  const sk={green:'sGreen',yellow:'sYellow',red:'sRed',purple:'sPurple'};
+  const statusTxt=t(sk[s.status]||'sPurple');
+  const mapsUrl=`https://maps.google.com/maps?q=${s.lat},${s.lon}`;
+  const dist=(userLat&&userLon)?`\n📏 ${calcDist(userLat,userLon,s.lat,s.lon).toFixed(1)} ${t('km')}`:'';
+  if(tg&&tg.switchInlineQuery){
+    tg.switchInlineQuery(`⛽ ${s.name}\n${statusIco[s.status]||'🟣'} ${statusTxt}${dist}`);
+  } else {
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(mapsUrl)}&text=${encodeURIComponent(`⛽ ${s.name}\n${statusIco[s.status]||'🟣'} ${statusTxt}${dist}`)}`,'_blank');
+  }
+}
+
+function openMaps(){
+  if(!currentDetailStation) return;
+  window.open(`https://maps.google.com/maps?q=${currentDetailStation.lat},${currentDetailStation.lon}`,'_blank');
+}
+
+let touchStartY=0;
+document.getElementById('detail-screen').addEventListener('touchstart',e=>touchStartY=e.touches[0].clientY);
+document.getElementById('detail-screen').addEventListener('touchend',e=>{ if(e.changedTouches[0].clientY-touchStartY>80) closeDetail(); });
+
+function onSearch(val){
+  searchQuery=val.trim();
+  document.getElementById('search-clear').classList.toggle('show',searchQuery.length>0);
+  renderList();
+}
+
+function clearSearch(){
+  searchQuery='';
+  document.getElementById('search-inp').value='';
+  document.getElementById('search-clear').classList.remove('show');
+  renderList();
+  document.getElementById('search-inp').focus();
+}
+
+function startAutoUpdate(){
+  if(autoUpdateInterval) clearInterval(autoUpdateInterval);
+  autoUpdateInterval=setInterval(()=>silentUpdate(),30000);
+}
+
+async function silentUpdate(){
+  const ind=document.getElementById('update-indicator');
+  document.getElementById('update-txt').textContent=lang==='kz'?'Жаңартылуда...':'Обновление...';
+  ind.classList.add('show');
+  try{
+    const r=await fetch(`${API}/stations`,{headers:H});
+    const newStations=await r.json();
+    let changed=false;
+    newStations.forEach(ns=>{const old=allStations.find(s=>s.id===ns.id);if(!old||old.status!==ns.status)changed=true;});
+    allStations=newStations; lastUpdated=new Date(); updateLastUpdatedTxt();
+    if(changed){renderList();if(map)renderMapMarkers();}
+    setTimeout(()=>ind.classList.remove('show'),1500);
+  }catch(e){setTimeout(()=>ind.classList.remove('show'),1500);}
+}
+
+function updateLastUpdatedTxt(){
+  const el=document.getElementById('list-updated-txt');
+  if(el&&lastUpdated) el.textContent=timeAgo(lastUpdated);
+}
+setInterval(updateLastUpdatedTxt,10000);
+
+function showScreen(id,idx){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-btn')[idx]?.classList.add('active');
+  if(id==='map-screen'){if(!map)initMap();else setTimeout(()=>map.invalidateSize(),150);}
+  if(id==='owner-screen')initOwnerScreen();
+}
+
+function initMap(){
+  if(map)return;
+  const center=userLat?[userLat,userLon]:[48.0,66.0];
+  const zoom=userLat?13:5;
+  map=L.map('map',{zoomControl:false}).setView(center,zoom);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+  L.control.zoom({position:'topright'}).addTo(map);
+  if(userLat)addUserMarker(userLat,userLon);
+  renderMapMarkers();
+  setTimeout(()=>map.invalidateSize(),200);
+  setTimeout(()=>map.invalidateSize(),600);
+}
+
+function addUserMarker(lat,lon){
+  if(userMarker)map.removeLayer(userMarker);
+  const icon=L.divIcon({html:`<div style="width:20px;height:20px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 2px 10px rgba(59,130,246,0.6)"></div>`,iconSize:[20,20],iconAnchor:[10,10],className:''});
+  userMarker=L.marker([lat,lon],{icon}).addTo(map);
+}
+
+function locateUser(){
+  const btn=document.getElementById('locate-btn');
+  btn.classList.add('loading'); btn.textContent='⌛';
+  const onOk=(lat,lon)=>{
+    userLat=lat; userLon=lon;
+    btn.classList.remove('loading'); btn.textContent='📍';
+    map.setView([lat,lon],14);
+    addUserMarker(lat,lon);
+    renderMapMarkers(); renderList(); showNearestBanner();
+  };
+  const onErr=()=>{btn.classList.remove('loading');btn.textContent='📍';};
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(p=>onOk(p.coords.latitude,p.coords.longitude),onErr,{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+  } else onErr();
+}
+
+function showNearestBanner(){
+  if(!userLat||!allStations.length) return;
+  const nearest=allStations.map(s=>({...s,d:calcDist(userLat,userLon,s.lat,s.lon)})).sort((a,b)=>a.d-b.d)[0];
+  if(!nearest) return;
+  const color=statusColors[nearest.status]||'#a855f7';
+  const sk={green:'sGreen',yellow:'sYellow',red:'sRed',purple:'sPurple'};
+  const banner=document.getElementById('nearest-banner');
+  banner.innerHTML=`
+    <div style="display:flex;align-items:center;gap:14px" onclick="openDetail(${nearest.id})">
+      <div style="width:46px;height:46px;border-radius:13px;background:${statusBg[nearest.status]||'#f3e8ff'};display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${statusIco[nearest.status]||'🟣'}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">${t('nearest')}</div>
+        <div style="font-weight:800;font-size:15px;margin:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${nearest.name}</div>
+        <div style="font-size:12px;color:${color};font-weight:600">${t(sk[nearest.status]||'sPurple')}</div>
+      </div>
+      <div style="text-align:center;flex-shrink:0">
+        <div style="font-size:22px;font-weight:900;color:${color};line-height:1">${nearest.d.toFixed(1)}</div>
+        <div style="font-size:10px;color:#94a3b8;font-weight:600">${t('km')}</div>
+      </div>
+    </div>`;
+  banner.classList.add('show');
+  setTimeout(()=>banner.classList.remove('show'),5000);
+}
+
+function renderMapMarkers(){
+  markers.forEach(m=>map?.removeLayer(m)); markers=[];
+  allStations.forEach(s=>{
+    const color=statusColors[s.status]||'#a855f7';
+    const icon=L.divIcon({html:`<div style="width:36px;height:36px;border-radius:50% 50% 50% 0;background:${color};transform:rotate(-45deg);border:3px solid white;box-shadow:0 4px 12px rgba(0,0,0,0.2)"></div>`,iconSize:[36,36],iconAnchor:[18,36],className:''});
+    const sk={green:'sGreen',yellow:'sYellow',red:'sRed',purple:'sPurple'};
+    const dist=(userLat&&userLon)?`<br>📏 ${calcDist(userLat,userLon,s.lat,s.lon).toFixed(1)} ${t('km')}`:'';
+    const m=L.marker([s.lat,s.lon],{icon}).addTo(map);
+    m.bindPopup(`<b>${s.name}</b><br><span style="color:${color}">● ${t(sk[s.status]||'sPurple')}</span>${dist}<br><a href="#" onclick="event.preventDefault();openDetail(${s.id})" style="color:${color};font-weight:600">Подробнее →</a>`);
+    markers.push(m);
+  });
+}
+
+function renderList(){
+  const sk={green:'sGreen',yellow:'sYellow',red:'sRed',purple:'sPurple'};
+  let stations=[...allStations];
+  if(userLat&&userLon) stations=stations.map(s=>({...s,dist:calcDist(userLat,userLon,s.lat,s.lon)})).sort((a,b)=>a.dist-b.dist);
+  if(currentFilter!=='all') stations=stations.filter(s=>s.status===currentFilter);
+  if(searchQuery) stations=stations.filter(s=>s.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const nearestId=([...allStations].map(s=>userLat?{...s,dist:calcDist(userLat,userLon,s.lat,s.lon)}:s).sort((a,b)=>(a.dist||0)-(b.dist||0))[0])?.id;
+  if(stations.length===0){
+    document.getElementById('station-list').innerHTML=`<div class="empty-state"><div class="empty-ico">${searchQuery?'🔍':'⛽'}</div><div class="empty-txt">${t('noResults')}</div><div class="empty-sub">${t('noResultsSub')}</div></div>`;
+    return;
+  }
+  document.getElementById('station-list').innerHTML=stations.map(s=>`
+    <div class="s-card ${s.id===nearestId&&userLat?'nearest':''}" onclick="openDetail(${s.id})">
+      <div class="s-status-ico" style="background:${statusBg[s.status]||'rgba(168,85,247,0.12)'}">${statusIco[s.status]||'🟣'}</div>
+      <div class="s-info">
+        <div class="s-name">${s.id===nearestId&&userLat?'⭐ ':''}${highlightText(s.name,searchQuery)}</div>
+        <div class="s-meta">${t(sk[s.status]||'sPurple')} · ${s.lastUpdated?.slice(0,16).replace('T',' ')}</div>
+        ${s.dist!==undefined?`<span class="s-dist" style="background:${statusBg[s.status]||'rgba(168,85,247,0.12)'};color:${statusColors[s.status]||'#a855f7'}">📏 ${s.dist.toFixed(1)} ${t('km')}</span>`:''}
+      </div>
+      <div class="s-arrow">›</div>
+    </div>`).join('');
+}
+
+function filterStatus(status){
+  currentFilter=status;
+  ['all','green','yellow','red'].forEach(f=>document.getElementById('f-'+f)?.classList.toggle('active',f===status));
+  renderList();
+}
+
+function initOwnerScreen(){if(token)fetchMe();else showLogin();}
+
+function showLogin(){
+  document.getElementById('login-panel').style.display='block';
+  document.getElementById('register-panel').style.display='none';
+  document.getElementById('dashboard-panel').style.display='none';
+  document.getElementById('login-error').style.display='none';
+}
+
+function showRegister(){
+  document.getElementById('login-panel').style.display='none';
+  document.getElementById('register-panel').style.display='block';
+  const sel=document.getElementById('reg-station-select');
+  sel.innerHTML='<option value="">Таңдаңыз...</option>';
+  allStations.filter(s=>!s.hasOwner).forEach(s=>sel.innerHTML+=`<option value="${s.id}">${s.name}</option>`);
+}
+
+function setRegTab(tab,btn){
+  regTab=tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('reg-claim').style.display=tab==='claim'?'block':'none';
+  document.getElementById('reg-new').style.display=tab==='new'?'block':'none';
+}
+
+async function doLogin(){
+  const phone=document.getElementById('inp-phone').value;
+  const password=document.getElementById('inp-password').value;
+  try{
+    const r=await fetch(`${API}/auth/login`,{method:'POST',headers:{...H,'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({username:phone,password})});
+    const data=await r.json();
+    if(r.ok){token=data.access_token;localStorage.setItem('tg_token',token);fetchMe();}
+    else{const el=document.getElementById('login-error');el.style.display='block';el.textContent=data.detail||'Ошибка';}
+  }catch(e){console.error(e);}
+}
+
+async function fetchMe(){
+  try{
+    const r=await fetch(`${API}/auth/me`,{headers:{...H,Authorization:`Bearer ${token}`}});
+    if(!r.ok){token=null;localStorage.removeItem('tg_token');showLogin();return;}
+    myUser=await r.json();
+    myStation=allStations.find(s=>s.id===myUser.station_id)||null;
+    showDashboard();
+  }catch(e){showLogin();}
+}
+
+function showDashboard(){
+  document.getElementById('login-panel').style.display='none';
+  document.getElementById('register-panel').style.display='none';
+  document.getElementById('dashboard-panel').style.display='block';
+  if(myStation){
+    document.getElementById('my-station-name').textContent=myStation.name;
+    const color=statusColors[myStation.status]||'#a855f7';
+    const sk={green:'sGreen',yellow:'sYellow',red:'sRed',purple:'sPurple'};
+    document.getElementById('my-status-dot').style.background=color;
+    document.getElementById('my-status-text').textContent=statusIco[myStation.status]+' '+t(sk[myStation.status]||'sPurple');
+    document.getElementById('status-pill').style.background=statusBg[myStation.status]||'rgba(168,85,247,0.12)';
+    document.getElementById('my-last-updated').textContent='🕐 '+(myStation.lastUpdated?.slice(0,16).replace('T',' ')||'');
+  }
+}
+
+async function setMyStatus(status){
+  if(!myStation)return;
+  try{
+    const r=await fetch(`${API}/stations/${myStation.id}/update`,{method:'POST',headers:{...H,'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({status})});
+    if(r.ok){
+      myStation.status=status;
+      const color=statusColors[status];
+      const sk={green:'sGreen',yellow:'sYellow',red:'sRed'};
+      document.getElementById('my-status-dot').style.background=color;
+      document.getElementById('my-status-text').textContent=statusIco[status]+' '+t(sk[status]);
+      document.getElementById('status-pill').style.background=statusBg[status];
+      const msg=document.getElementById('update-success');
+      msg.style.display='block';
+      setTimeout(()=>msg.style.display='none',2500);
+      loadStations();
+    }
+  }catch(e){console.error(e);}
+}
+
+async function doRegister(){
+  const name=document.getElementById('reg-name').value;
+  const phone=document.getElementById('reg-phone').value;
+  const password=document.getElementById('reg-password').value;
+  const errEl=document.getElementById('reg-error');
+  const sucEl=document.getElementById('reg-success');
+  errEl.style.display='none';
+  if(regTab==='claim'){
+    const stationId=parseInt(document.getElementById('reg-station-select').value);
+    if(!stationId){errEl.style.display='block';errEl.textContent=t('errSt');return;}
+    try{
+      const telegramId=tg?.initDataUnsafe?.user?.id||null;
+      const r=await fetch(`${API}/auth/register`,{method:'POST',headers:{...H,'Content-Type':'application/json'},body:JSON.stringify({name,phone,password,station_id:stationId,telegram_id:telegramId})});
+      const data=await r.json();
+      if(r.ok){sucEl.style.display='block';sucEl.textContent=t('success');setTimeout(()=>showLogin(),3000);}
+      else{errEl.style.display='block';errEl.textContent=data.detail||'Ошибка';}
+    }catch(e){console.error(e);}
+  }else{errEl.style.display='block';errEl.textContent='Барлық өрістерді толтырыңыз';}
+}
+
+function doLogout(){token=null;localStorage.removeItem('tg_token');myUser=null;myStation=null;showLogin();}
+
+async function loadStations(){
+  try{
+    const r=await fetch(`${API}/stations`,{headers:H});
+    allStations=await r.json();
+    lastUpdated=new Date(); updateLastUpdatedTxt();
+    renderList();
+    if(map){renderMapMarkers();if(userLat)showNearestBanner();}
+  }catch(e){console.error(e);}
+}
+</script>
+</body>
+</html>
