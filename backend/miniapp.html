@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>АГЗС Мониторинг</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    :root { --nav-h:64px; }
+    body { font-family:-apple-system,sans-serif; background:#f0f4f8; }
+    #welcome-screen { position:fixed; inset:0; z-index:9999; background:#0a0a0f; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; }
+    .w-logo { width:88px; height:88px; border-radius:26px; background:linear-gradient(135deg,#22c55e,#16a34a); display:flex; align-items:center; justify-content:center; font-size:44px; margin-bottom:20px; }
+    .w-title { font-size:30px; font-weight:900; color:white; margin-bottom:6px; }
+    .w-sub { font-size:13px; color:rgba(255,255,255,0.35); margin-bottom:40px; }
+    #step-lang { display:flex; flex-direction:column; align-items:center; width:100%; max-width:320px; }
+    .step-label { font-size:10px; font-weight:700; color:rgba(255,255,255,0.25); text-transform:uppercase; margin-bottom:14px; }
+    .lang-row { display:flex; gap:10px; width:100%; }
+    .lang-btn { flex:1; padding:16px; border-radius:16px; border:1.5px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:white; font-size:15px; font-weight:600; cursor:pointer; }
+    .lang-btn.selected { border-color:#22c55e; background:rgba(34,197,94,0.2); }
+    #step-role { display:none; flex-direction:column; align-items:center; width:100%; max-width:340px; }
+    .role-cards { display:flex; flex-direction:column; gap:10px; width:100%; }
+    .role-card { padding:18px 20px; border-radius:18px; border:1.5px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.06); cursor:pointer; display:flex; align-items:center; gap:16px; opacity:0; transform:translateY(20px); transition:all 0.4s; }
+    .role-card.card-visible { opacity:1; transform:translateY(0); }
+    .role-ico { width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:26px; }
+    .role-card.driver .role-ico { background:rgba(59,130,246,0.2); }
+    .role-card.owner .role-ico { background:rgba(34,197,94,0.2); }
+    .role-name { font-size:16px; font-weight:700; color:white; }
+    .role-desc { font-size:12px; color:rgba(255,255,255,0.4); }
+    #app { height:100vh; flex-direction:column; display:none; }
+    .nav { display:flex; background:white; position:fixed; bottom:0; left:0; right:0; height:var(--nav-h); z-index:1000; padding:0 8px; }
+    .nav-btn { flex:1; border:none; background:transparent; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:#94a3b8; }
+    .nav-btn.active { color:#22c55e; }
+    .nav-ico { font-size:24px; }
+    .nav-txt { font-size:10px; font-weight:600; }
+    .screen { display:none; height:calc(100vh - var(--nav-h)); overflow-y:auto; }
+    .screen.active { display:block; }
+    #map { width:100%; height:100%; }
+    .gas-btn { padding:14px; border:2px solid #e2e8f0; border-radius:12px; background:white; cursor:pointer; }
+    .gas-btn.active { border-width:3px !important; }
+    .gas-btn[data-status="green"].active { border-color:#22c55e !important; background:#dcfce7 !important; }
+    .gas-btn[data-status="yellow"].active { border-color:#eab308 !important; background:#fef3c7 !important; }
+    .gas-btn[data-status="red"].active { border-color:#ef4444 !important; background:#fee2e2 !important; }
+    
+    /* ПОЛЗУНОК ОЧЕРЕДИ */
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 10px;
+      border-radius: 5px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: white;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: white;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+<div id="welcome-screen">
+  <div class="w-logo">⛽</div>
+  <div class="w-title">АГЗС Мониторинг</div>
+  <div class="w-sub">Қазақстан · Kazakhstan</div>
+  <div id="step-lang">
+    <div class="step-label">ТІЛДІ ТАҢДАҢЫЗ · ВЫБЕРИТЕ ЯЗЫК</div>
+    <div class="lang-row">
+      <button class="lang-btn selected" id="btn-kz" onclick="selectLang('kz')">🇰🇿 Қазақша</button>
+      <button class="lang-btn" id="btn-ru" onclick="selectLang('ru')">🇷🇺 Русский</button>
+    </div>
+  </div>
+  <div id="step-role">
+    <div class="step-label" id="w-choose">РӨЛІҢІЗДІ ТАҢДАҢЫЗ</div>
+    <div class="role-cards">
+      <div class="role-card driver" onclick="enterAs('driver')">
+        <div class="role-ico">🚗</div>
+        <div><div class="role-name" id="r-driver">Мен жүргізушімін</div>
+        <div class="role-desc" id="r-driver-desc">Жақын АГЗС-ті іздеу</div></div>
+      </div>
+      <div class="role-card owner" onclick="enterAs('owner')">
+        <div class="role-ico">⛽</div>
+        <div><div class="role-name" id="r-owner">Мен иесімін</div>
+        <div class="role-desc" id="r-owner-desc">Станцияны басқару</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+  <div id="map-screen" class="screen active">
+    <div id="map"></div>
+    
+    <!-- ЛЕГЕНДА КАРТЫ (компактная, прозрачная, выше) -->
+    <div style="position:absolute;bottom:80px;left:15px;z-index:1000;background:rgba(255,255,255,0.7);backdrop-filter:blur(8px);border-radius:12px;padding:10px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.06);min-width:120px;">
+      <div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#64748b;letter-spacing:0.5px;margin-bottom:8px;">Статус</div>
+      
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;align-items:center;gap:7px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 2px rgba(34,197,94,0.15);flex-shrink:0;"></div>
+          <span style="font-size:11px;font-weight:600;color:#0f172a;">Газ есть</span>
+        </div>
+        
+        <div style="display:flex;align-items:center;gap:7px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:#eab308;box-shadow:0 0 0 2px rgba(234,179,8,0.15);flex-shrink:0;"></div>
+          <span style="font-size:11px;font-weight:600;color:#0f172a;">Газ мало</span>
+        </div>
+        
+        <div style="display:flex;align-items:center;gap:7px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:#ef4444;box-shadow:0 0 0 2px rgba(239,68,68,0.15);flex-shrink:0;"></div>
+          <span style="font-size:11px;font-weight:600;color:#0f172a;">Газ нет</span>
+        </div>
+        
+        <div style="display:flex;align-items:center;gap:7px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:#a855f7;box-shadow:0 0 0 2px rgba(168,85,247,0.15);flex-shrink:0;"></div>
+          <span style="font-size:11px;font-weight:600;color:#0f172a;">Неизвестно</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="list-screen" class="screen"><div id="list-content"></div></div>
+  
+  <div id="owner-screen" class="screen">
+    <div style="padding:20px 16px;padding-bottom:100px;">
+      <div style="font-size:22px;font-weight:800;margin-bottom:20px;">👤 Кабинет владельца</div>
+      
+      <!-- Статус станции -->
+      <div style="background:white;border-radius:16px;padding:20px;margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div>
+            <div style="font-size:18px;font-weight:700;">Моя станция</div>
+            <div style="font-size:13px;color:#64748b;margin-top:4px;" id="plan-status">Бесплатный план</div>
+          </div>
+          <button onclick="upgradeToPremium()" id="premium-btn" style="padding:8px 16px;background:#fbbf24;color:#78350f;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">⭐ Премиум</button>
+        </div>
+      </div>
+      
+      <!-- БЕСПЛАТНАЯ ВЕРСИЯ -->
+      
+      <!-- Статус газа -->
+      <div style="background:white;border-radius:16px;padding:20px;margin-bottom:16px;">
+        <div style="font-size:16px;font-weight:700;margin-bottom:16px;">🔵 Статус газа</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+          <button onclick="setGasStatus('green')" class="gas-btn" data-status="green">
+            <div style="font-size:24px;margin-bottom:4px;">🟢</div>
+            <div style="font-size:13px;font-weight:600;">Газ есть</div>
+          </button>
+          <button onclick="setGasStatus('yellow')" class="gas-btn" data-status="yellow">
+            <div style="font-size:24px;margin-bottom:4px;">🟡</div>
+            <div style="font-size:13px;font-weight:600;">Газ мало</div>
+          </button>
+          <button onclick="setGasStatus('red')" class="gas-btn" data-status="red">
+            <div style="font-size:24px;margin-bottom:4px;">🔴</div>
+            <div style="font-size:13px;font-weight:600;">Газ нет</div>
+          </button>
+        </div>
+        <div style="margin-top:12px;padding:12px;background:#f8fafc;border-radius:8px;font-size:12px;color:#64748b;">
+          ℹ️ <strong>Неизвестно (🟣)</strong> — автоматически, если не обновляли 24 часа
+        </div>
+      </div>
+      
+      <!-- Очередь -->
+      <div style="background:white;border-radius:16px;padding:20px;margin-bottom:16px;">
+        <div style="font-size:16px;font-weight:700;margin-bottom:16px;">👥 Очередь</div>
+        <div style="margin-bottom:12px;">
+          <input type="range" id="queue-slider" min="0" max="100" value="0" oninput="updateQueue(this.value)" style="background:linear-gradient(to right, #22c55e 0%, #eab308 50%, #ef4444 100%);">
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:13px;color:#64748b;">Нет очереди</span>
+          <span style="font-size:20px;font-weight:800;color:#22c55e;" id="queue-value">0%</span>
+          <span style="font-size:13px;color:#64748b;">Большая</span>
+        </div>
+      </div>
+      
+      <!-- Часы работы -->
+      <div style="background:white;border-radius:16px;padding:20px;margin-bottom:16px;">
+        <div style="font-size:16px;font-weight:700;margin-bottom:16px;">🕐 Часы работы</div>
+        <label style="display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer;">
+          <input type="checkbox" id="is24h" onchange="toggle24h(this.checked)" style="width:20px;height:20px;">
+          <span style="font-size:15px;font-weight:600;">Круглосуточно (24/7)</span>
+        </label>
+        <div id="hours-inputs">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+            <div>
+              <label style="font-size:13px;color:#64748b;margin-bottom:6px;display:block;">Открытие</label>
+              <input type="time" id="open-time" value="09:00" style="width:100%;padding:12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:15px;">
+            </div>
+            <div>
+              <label style="font-size:13px;color:#64748b;margin-bottom:6px;display:block;">Закрытие</label>
+              <input type="time" id="close-time" value="21:00" style="width:100%;padding:12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:15px;">
+            </div>
+          </div>
+        </div>
+        <button onclick="saveHours()" style="width:100%;padding:12px;background:#22c55e;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Сохранить часы</button>
+      </div>
+      
+      <!-- ПРЕМИУМ БЛОК -->
+      <div id="premium-promo" style="background:linear-gradient(135deg,#fbbf24,#f59e0b);border-radius:16px;padding:24px;margin-bottom:16px;color:#78350f;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+          <div style="font-size:48px;">⭐</div>
+          <div>
+            <div style="font-size:20px;font-weight:800;">Премиум план</div>
+            <div style="font-size:14px;opacity:0.8;">Расширенные возможности</div>
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,0.3);border-radius:12px;padding:16px;margin-bottom:16px;">
+          <div style="font-weight:700;margin-bottom:12px;">Что входит:</div>
+          <div style="font-size:14px;line-height:1.8;">
+            ✓ Значок "Проверенная станция" ⭐<br>
+            ✓ Указание цены газа (₸/литр)<br>
+            ✓ Доп. услуги (магазин, кафе, автомойка, шиномонтаж, подкачка шин, автосервис, пылесос)<br>
+            ✓ Фотографии станции (до 10 шт)<br>
+            ✓ До 3 доверенных сотрудников<br>
+            ✓ Расширенная статистика
+          </div>
+        </div>
+        <button onclick="upgradeToPremium()" style="width:100%;padding:14px;background:white;color:#f59e0b;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+          🔓 Активировать за 5000 ₸/мес
+        </button>
+      </div>
+      
+      <!-- ПРЕМИУМ ФУНКЦИИ (скрыты по умолчанию) -->
+      <div id="premium-features" style="display:none;">
+        
+        <!-- Цена газа -->
+        <div style="background:white;border-radius:16px;padding:20px;margin-bottom:16px;">
+          <div style="font-size:16px;font-weight:700;margin-bottom:16px;">💰 Цена газа</div>
+          <div style="margin-bottom:16px;">
+            <label style="font-size:13px;color:#64748b;margin-bottom:6px;display:block;">Цена за литр (₸)</label>
+            <input type="number" id="gas-price" placeholder="150" step="0.1" style="width:100%;padding:14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:18px;font-weight:700;">
+          </div>
+          <button onclick="saveGasPrice()" style="width:100%;padding:12px;background:#22c55e;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Сохранить цену</button>
+        </div>
+        
+        <!-- Доп услуги -->
+        <div style="background:white;border-radius:16px;padding:20px;margin-bottom:16px;">
+          <div style="font-size:16px;font-weight:700;margin-bottom:16px;">🛠 Дополнительные услуги</div>
+          <div style="display:grid;gap:10px;margin-bottom:16px;">
+            <label style="display:flex;align-items:center;gap:10px;padding:14px;background:#f8fafc;border-radius:10px;cursor:pointer;">
+              <input type="checkbox" class="service-cb" data-service="shop" style="width:20px;height:20px;">
+              <span style="font-size:15px;font-weight:600;">🏪 Магазин</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;padding:14px;background:#f8fafc;border-radius:10px;cursor:pointer;">
+              <input type="checkbox" class="service-cb" data-service="cafe" style="width:20px;height:20px;">
+              <span style="font-size:15px;font-weight:600;">☕ Кафе</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;padding:14px;background:#f8fafc;border-radius:10px;cursor:pointer;">
+              <input type="checkbox" class="service-cb" data-service="carwash" style="width:20px;height:20px;">
+              <span style="font-size:15px;font-weight:600;">🚿 Автомойка</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;padding:14px;background:#f8fafc;border-radius:10px;cursor:pointer;">
+              <input type="checkbox" class="service-cb" data-service="tire_service" style="width:20px;height:20px;">
+              <span style="font-size:15px;font-weight:600;">🔧 Шиномонтаж</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;padding:14px;background:#f8fafc;border-radius:10px;cursor:pointer;">
+              <input type="checkbox" class="service-cb" data-service="tire_air" style="width:20px;height:20px;">
+              <span style="font-size:15px;font-weight:600;">💨 Подкачка шин</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;padding:14px;background:#f8fafc;border-radius:10px;cursor:pointer;">
+              <input type="checkbox" class="service-cb" data-service="auto_service" style="width:20px;height:20px;">
+              <span style="font-size:15px;font-weight:600;">🔩 Автосервис</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;padding:14px;background:#f8fafc;border-radius:10px;cursor:pointer;">
+              <input type="checkbox" class="service-cb" data-service="vacuum" style="width:20px;height:20px;">
+              <span style="font-size:15px;font-weight:600;">🌪️ Автопылесос</span>
+            </label>
+          </div>
+          <button onclick="saveServices()" style="width:100%;padding:12px;background:#22c55e;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Сохранить услуги</button>
+        </div>
+        
+        <!-- Фотографии -->
+        <div style="background:white;border-radius:16px;padding:20px;margin-bottom:16px;">
+          <div style="font-size:16px;font-weight:700;margin-bottom:16px;">📸 Фотографии станции</div>
+          <input type="file" id="photo-input" accept="image/*" multiple style="display:none;">
+          <button onclick="document.getElementById('photo-input').click()" style="width:100%;padding:12px;background:#f1f5f9;border:1.5px dashed #cbd5e1;border-radius:8px;color:#64748b;font-weight:600;cursor:pointer;">+ Загрузить фото</button>
+          <div id="photos-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;"></div>
+        </div>
+        
+        <!-- Доверенные сотрудники -->
+        <div style="background:white;border-radius:16px;padding:20px;margin-bottom:16px;">
+          <div style="font-size:16px;font-weight:700;margin-bottom:12px;">👥 Доверенные сотрудники (0/3)</div>
+          <div style="font-size:13px;color:#64748b;margin-bottom:16px;">Могут управлять статусом газа и очередью</div>
+          <div id="trusted-list" style="margin-bottom:12px;"></div>
+          <button onclick="addTrustedPerson()" style="width:100%;padding:12px;background:#f1f5f9;border:1.5px dashed #cbd5e1;border-radius:8px;color:#64748b;font-weight:600;cursor:pointer;">+ Добавить сотрудника</button>
+        </div>
+        
+      </div>
+      
+    </div>
+  </div>
+  
+  <div class="nav">
+    <button class="nav-btn active" onclick="showScreen('map-screen',0)">
+      <span class="nav-ico">🗺️</span><span class="nav-txt" id="nav-map">Карта</span>
+    </button>
+    <button class="nav-btn" onclick="showScreen('list-screen',1)">
+      <span class="nav-ico">📋</span><span class="nav-txt" id="nav-list">Список</span>
+    </button>
+    <button class="nav-btn" id="nav-owner" onclick="showScreen('owner-screen',2)" style="display:none">
+      <span class="nav-ico">👤</span><span class="nav-txt" id="nav-cabinet">Кабинет</span>
+    </button>
+  </div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО ЖАЛОБЫ -->
+<div id="complaint-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;justify-content:center;align-items:center;">
+  <div style="background:white;border-radius:20px;padding:24px;max-width:400px;width:90%;max-height:80vh;overflow-y:auto;">
+    
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div style="font-size:20px;font-weight:800;">⚠️ Пожаловаться</div>
+      <button onclick="closeComplaintModal()" style="background:none;border:none;font-size:24px;color:#94a3b8;cursor:pointer;">×</button>
+    </div>
+    
+    <div style="font-size:14px;color:#64748b;margin-bottom:20px;">
+      Помогите улучшить сервис! Укажите причину жалобы:
+    </div>
+    
+    <div style="margin-bottom:20px;">
+      <label style="display:block;font-size:13px;font-weight:600;color:#64748b;margin-bottom:8px;">Причина жалобы</label>
+      <select id="complaint-reason" onchange="toggleCommentField()" style="width:100%;padding:12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:15px;">
+        <option value="">Выберите причину...</option>
+        <option value="no_gas">❌ Газа нет (а указано "есть")</option>
+        <option value="low_gas">⚠️ Газа мало (а указано "много")</option>
+        <option value="closed">🔴 Станция закрыта</option>
+        <option value="wrong_price">💰 Неверная цена</option>
+        <option value="other">ℹ️ Другое</option>
+      </select>
+    </div>
+    
+    <div id="comment-field" style="margin-bottom:20px;">
+      <label style="display:block;font-size:13px;font-weight:600;color:#64748b;margin-bottom:8px;">
+        Комментарий <span style="color:#94a3b8;font-weight:400;">(опционально)</span>
+      </label>
+      <textarea id="complaint-comment" placeholder="Опишите проблему подробнее..." style="width:100%;padding:12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;min-height:80px;resize:vertical;"></textarea>
+    </div>
+    
+    <div style="display:flex;gap:12px;">
+      <button onclick="closeComplaintModal()" style="flex:1;padding:14px;background:#f1f5f9;color:#475569;border:none;border-radius:12px;font-weight:600;cursor:pointer;">
+        Отмена
+      </button>
+      <button onclick="submitComplaint()" style="flex:1;padding:14px;background:#ef4444;color:white;border:none;border-radius:12px;font-weight:600;cursor:pointer;">
+        Отправить
+      </button>
+    </div>
+    
+  </div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО УСПЕХА -->
+<div id="complaint-success-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10001;justify-content:center;align-items:center;">
+  <div style="background:white;border-radius:20px;padding:32px;max-width:360px;width:90%;text-align:center;">
+    <div style="font-size:64px;margin-bottom:16px;">✅</div>
+    <div style="font-size:22px;font-weight:800;margin-bottom:12px;">Жалоба отправлена</div>
+    <div id="complaint-success-text" style="font-size:14px;color:#64748b;margin-bottom:8px;"></div>
+    <div id="complaint-count-text" style="font-size:13px;color:#94a3b8;margin-bottom:24px;"></div>
+    <button onclick="closeSuccessModal()" style="width:100%;padding:12px;background:#22c55e;color:white;border:none;border-radius:12px;font-weight:700;cursor:pointer;">
+      Понятно
+    </button>
+  </div>
+</div>
+
+<script>
+const API='https://nonconversationally-vestibular-pia.ngrok-free.dev';
+const H={'ngrok-skip-browser-warning':'true'};
+let lang='kz',map=null,allStations=[],isPremium=false;
+let currentComplaintStationId=null;
+
+const tg=window.Telegram?.WebApp;
+if(tg){tg.ready();tg.expand();}
+
+const urlParams=new URLSearchParams(window.location.search);
+if(urlParams.get('skip')==='1'){
+  console.log('🚀 Прямое открытие карты');
+  lang='ru';
+  document.getElementById('welcome-screen').style.display='none';
+  const app=document.getElementById('app');
+  app.style.display='flex';
+  app.style.opacity='1';
+  document.getElementById('nav-map').textContent='Карта';
+  document.getElementById('nav-list').textContent='Список';
+  setTimeout(()=>{initMap();setTimeout(()=>loadStations(),500);},300);
+}
+
+const T={
+  kz:{map:'Карта',list:'Тізім',cabinet:'Кабинет',choose:'РӨЛІҢІЗДІ ТАҢДАҢЫЗ',rDriver:'Мен жүргізушімін',rDriverD:'Жақын АГЗС-ті іздеу',rOwner:'Мен иесімін',rOwnerD:'Станцияны басқару',stations:'Станциялар',green:'Газ бар',yellow:'Газ аз',red:'Газ жоқ',purple:'Белгісіз'},
+  ru:{map:'Карта',list:'Список',cabinet:'Кабинет',choose:'ВЫБЕРИТЕ СВОЮ РОЛЬ',rDriver:'Я водитель',rDriverD:'Найти ближайшую АГЗС',rOwner:'Я владелец АГЗС',rOwnerD:'Управление станцией',stations:'Список станций',green:'Газ есть',yellow:'Газ мало',red:'Газа нет',purple:'Неизвестно'}
+};
+const t=k=>T[lang][k]||k;
+
+function selectLang(l){
+  lang=l;
+  document.getElementById('btn-kz').classList.toggle('selected',l==='kz');
+  document.getElementById('btn-ru').classList.toggle('selected',l==='ru');
+  document.getElementById('w-choose').textContent=t('choose');
+  document.getElementById('r-driver').textContent=t('rDriver');
+  document.getElementById('r-driver-desc').textContent=t('rDriverD');
+  document.getElementById('r-owner').textContent=t('rOwner');
+  document.getElementById('r-owner-desc').textContent=t('rOwnerD');
+  const stepLang=document.getElementById('step-lang');
+  const stepRole=document.getElementById('step-role');
+  if(stepRole.style.display==='flex')return;
+  stepLang.style.opacity='0';
+  setTimeout(()=>{
+    stepLang.style.display='none';
+    stepRole.style.display='flex';
+    document.querySelectorAll('.role-card').forEach((c,i)=>setTimeout(()=>c.classList.add('card-visible'),i*80));
+  },400);
+}
+
+function enterAs(role){
+  const welcome=document.getElementById('welcome-screen');
+  const app=document.getElementById('app');
+  welcome.style.opacity='0';
+  setTimeout(()=>{
+    welcome.style.display='none';
+    app.style.display='flex';
+    app.style.opacity='1';
+    if(role==='owner')document.getElementById('nav-owner').style.display='flex';
+    document.getElementById('nav-map').textContent=t('map');
+    document.getElementById('nav-list').textContent=t('list');
+    document.getElementById('nav-cabinet').textContent=t('cabinet');
+    setTimeout(()=>{initMap();loadStations();},100);
+  },500);
+}
+
+function showScreen(id,idx){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-btn')[idx]?.classList.add('active');
+  if(id==='map-screen'&&map)setTimeout(()=>map.invalidateSize(),100);
+  if(id==='list-screen')renderList();
+}
+
+function initMap(){
+  if(map)return;
+  const mapEl=document.getElementById('map');
+  if(!mapEl)return;
+  try{
+    map=L.map('map').setView([43.65,51.16],13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    L.control.zoom({position:'topright'}).addTo(map);
+    setTimeout(()=>{if(map)map.invalidateSize();},200);
+  }catch(e){console.error(e);}
+}
+
+async function loadStations(){
+  try{
+    const r=await fetch(API+'/stations',{headers:H});
+    allStations=await r.json();
+    if(map){
+      allStations.forEach(s=>{
+        const colors={green:'#22c55e',yellow:'#eab308',red:'#ef4444',purple:'#a855f7'};
+        const color=colors[s.status]||'#a855f7';
+        
+        // РАЗНЫЕ МАРКЕРЫ для обычных и премиум станций
+        let markerHTML;
+        if(s.isPremium){
+          // ПРЕМИУМ: маркер с золотой звездой
+          markerHTML=`
+            <div style="position:relative;width:36px;height:36px;">
+              <div style="width:36px;height:36px;border-radius:50% 50% 50% 0;background:${color};transform:rotate(-45deg);border:3px solid #fbbf24;box-shadow:0 4px 12px rgba(0,0,0,0.3);"></div>
+              <div style="position:absolute;top:6px;left:10px;font-size:16px;transform:rotate(45deg);">⭐</div>
+            </div>
+          `;
+        }else{
+          // ОБЫЧНЫЙ: простой маркер
+          markerHTML=`<div style="width:36px;height:36px;border-radius:50% 50% 50% 0;background:${color};transform:rotate(-45deg);border:3px solid white;box-shadow:0 4px 12px rgba(0,0,0,0.2)"></div>`;
+        }
+        
+        const icon=L.divIcon({
+          html:markerHTML,
+          iconSize:[36,36],
+          iconAnchor:[18,36],
+          className:''
+        });
+        L.marker([s.lat,s.lon],{icon}).addTo(map).bindPopup(`
+          <div style="min-width:280px;font-family:sans-serif;">
+            <!-- Название станции -->
+            <div style="font-size:16px;font-weight:700;margin-bottom:8px;color:#0f172a;">
+              ${s.name}
+              ${s.isPremium ? '<span style="font-size:14px;">⭐</span>' : ''}
+            </div>
+            
+            <!-- БЕСПЛАТНАЯ ВЕРСИЯ: всегда показываем -->
+            
+            <!-- Статус газа -->
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+              <span style="font-size:18px;">${getStatusIcon(s.status)}</span>
+              <span style="font-weight:600;color:${colors[s.status]};">${t(s.status)}</span>
+            </div>
+            
+            <!-- Часы работы -->
+            ${s.working_hours ? `
+              <div style="font-size:13px;color:#64748b;margin-bottom:6px;">
+                🕐 ${formatWorkingHours(s.working_hours)}
+              </div>
+            ` : ''}
+            
+            <!-- Время последнего обновления -->
+            ${s.last_updated ? `
+              <div style="font-size:12px;color:#94a3b8;margin-bottom:6px;">
+                🕒 Обновлено: ${formatLastUpdate(s.last_updated)}
+              </div>
+            ` : ''}
+            
+            <!-- ПРЕМИУМ ВЕРСИЯ: дополнительная информация -->
+            ${s.isPremium ? `
+              <!-- Цена газа -->
+              ${s.gas_price ? `
+                <div style="font-size:14px;color:#0f172a;font-weight:600;margin-bottom:6px;">
+                  💰 ${s.gas_price} ₸/литр
+                </div>
+              ` : ''}
+              
+              <!-- Очередь -->
+              ${s.queue_level > 0 ? `
+                <div style="font-size:13px;color:#64748b;margin-bottom:6px;">
+                  👥 Очередь: ${s.queue_level}%
+                </div>
+              ` : ''}
+              
+              <!-- Доп услуги -->
+              ${s.services && s.services.length > 0 ? `
+                <div style="font-size:13px;color:#64748b;margin-bottom:6px;">
+                  ${formatServices(s.services)}
+                </div>
+              ` : ''}
+            ` : ''}
+            
+            <!-- Разделитель -->
+            <div style="border-top:1px solid #e2e8f0;margin:10px 0;"></div>
+            
+            <!-- Кнопка жалобы -->
+            <button onclick="openComplaintModal(${s.id},'${s.name}')" 
+                    style="width:100%;padding:10px 14px;background:#fee2e2;color:#ef4444;border:1px solid #fecaca;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">
+              ⚠️ Пожаловаться
+            </button>
+          </div>
+        `);
+      });
+    }
+  }catch(e){console.error(e);}
+}
+
+function renderList(){
+  const content=document.getElementById('list-content');
+  if(!allStations.length){content.innerHTML='<div style="padding:20px;text-align:center;color:#94a3b8;">Загрузка...</div>';return;}
+  const icons={green:'🟢',yellow:'🟡',red:'🔴',purple:'🟣'};
+  const colors={green:'#22c55e',yellow:'#eab308',red:'#ef4444',purple:'#a855f7'};
+  let html='<div style="padding:20px;"><div style="font-size:22px;font-weight:800;margin-bottom:16px;">'+t('stations')+'</div>';
+  allStations.forEach(s=>{
+    html+='<div style="background:white;border-radius:16px;padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(0,0,0,0.06);">';
+    html+='<div style="width:48px;height:48px;border-radius:12px;background:'+colors[s.status]+'20;display:flex;align-items:center;justify-content:center;font-size:24px;">'+icons[s.status]+'</div>';
+    html+='<div><div style="font-weight:700;font-size:15px;">'+s.name+'</div><div style="font-size:13px;color:#94a3b8;">'+t(s.status)+'</div></div></div>';
+  });
+  content.innerHTML=html+'</div>';
+}
+
+function setGasStatus(status){
+  document.querySelectorAll('.gas-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('[data-status="'+status+'"]').classList.add('active');
+  showNotification('✅ Статус обновлен: '+t(status));
+}
+
+function updateQueue(value){
+  const queueValue=document.getElementById('queue-value');
+  queueValue.textContent=value+'%';
+  if(value<30){queueValue.style.color='#22c55e';}
+  else if(value<70){queueValue.style.color='#eab308';}
+  else{queueValue.style.color='#ef4444';}
+}
+
+function toggle24h(checked){
+  document.getElementById('hours-inputs').style.display=checked?'none':'block';
+}
+
+function saveHours(){
+  showNotification('✅ Часы работы сохранены');
+}
+
+function upgradeToPremium(){
+  if(confirm('💰 Активировать Премиум план?\n\nСтоимость: 5000 ₸/месяц\n\n✓ Значок "Проверенная станция"\n✓ Цена газа\n✓ Доп. услуги\n✓ Фотографии\n✓ Доверенные сотрудники\n✓ Статистика')){
+    isPremium=true;
+    document.getElementById('premium-promo').style.display='none';
+    document.getElementById('premium-features').style.display='block';
+    document.getElementById('plan-status').innerHTML='⭐ Премиум план - Проверенная станция';
+    document.getElementById('premium-btn').style.display='none';
+    showPremiumSuccess();
+  }
+}
+
+function showPremiumSuccess(){
+  const notif=document.createElement('div');
+  notif.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:40px;border-radius:20px;text-align:center;z-index:10001;box-shadow:0 10px 40px rgba(0,0,0,0.3);';
+  notif.innerHTML='<div style="font-size:64px;margin-bottom:16px;">⭐</div><div style="font-size:24px;font-weight:800;margin-bottom:12px;">Премиум активирован!</div><div style="font-size:16px;color:#64748b;margin-bottom:8px;">Ваша станция — <strong>Проверенная</strong></div><div style="font-size:14px;color:#64748b;margin-bottom:24px;">Все функции разблокированы</div><button onclick="this.parentElement.remove()" style="padding:12px 32px;background:#22c55e;color:white;border:none;border-radius:12px;font-weight:700;cursor:pointer;">Отлично!</button>';
+  document.body.appendChild(notif);
+}
+
+function saveGasPrice(){
+  const price=document.getElementById('gas-price').value;
+  if(!price||price<=0){alert('Введите цену!');return;}
+  showNotification('✅ Цена сохранена: '+price+' ₸/л');
+}
+
+function saveServices(){
+  const services=[];
+  document.querySelectorAll('.service-cb:checked').forEach(cb=>services.push(cb.dataset.service));
+  showNotification('✅ Услуги сохранены ('+services.length+')');
+}
+
+function addTrustedPerson(){
+  const name=prompt('Введите имя сотрудника:');
+  if(!name)return;
+  const phone=prompt('Введите телефон:');
+  if(!phone)return;
+  const list=document.getElementById('trusted-list');
+  const item=document.createElement('div');
+  item.style.cssText='padding:12px;background:#f8fafc;border-radius:8px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;';
+  item.innerHTML='<div><div style="font-weight:600;">'+name+'</div><div style="font-size:12px;color:#64748b;">'+phone+'</div></div><button onclick="this.parentElement.remove()" style="padding:6px 12px;background:#fee2e2;color:#ef4444;border:none;border-radius:6px;font-size:12px;cursor:pointer;">Удалить</button>';
+  list.appendChild(item);
+  showNotification('✅ Сотрудник добавлен');
+}
+
+function showNotification(text){
+  const notif=document.createElement('div');
+  notif.style.cssText='position:fixed;top:20px;right:20px;background:#22c55e;color:white;padding:16px 24px;border-radius:12px;font-weight:600;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,0.2);';
+  notif.textContent=text;
+  document.body.appendChild(notif);
+  setTimeout(()=>notif.remove(),2000);
+}
+
+
+// ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
+
+function getStatusIcon(status){
+  const icons={green:'🟢',yellow:'🟡',red:'🔴',purple:'🟣'};
+  return icons[status]||'🟣';
+}
+
+function formatWorkingHours(hours){
+  if(!hours)return 'Не указано';
+  if(hours.is24h||hours.is_24h)return 'Круглосуточно';
+  if(hours.open_time&&hours.close_time){
+    return `${hours.open_time} - ${hours.close_time}`;
+  }
+  return 'Не указано';
+}
+
+function formatServices(services){
+  if(!services||services.length===0)return '';
+  const serviceIcons={
+    shop:'🏪 Магазин',
+    cafe:'☕ Кафе',
+    carwash:'🚿 Автомойка',
+    tire_service:'🔧 Шиномонтаж',
+    tire_air:'💨 Подкачка шин',
+    auto_service:'🔩 Автосервис',
+    vacuum:'🌪️ Пылесос'
+  };
+  const serviceNames=services.map(s=>serviceIcons[s]||s).join(', ');
+  return serviceNames;
+}
+
+function formatLastUpdate(timestamp){
+  if(!timestamp)return '';
+  const date=new Date(timestamp);
+  const now=new Date();
+  const diff=Math.floor((now-date)/1000);
+  
+  if(diff<60)return 'только что';
+  if(diff<3600)return Math.floor(diff/60)+' мин назад';
+  if(diff<86400)return Math.floor(diff/3600)+' ч назад';
+  
+  const day=date.getDate().toString().padStart(2,'0');
+  const month=(date.getMonth()+1).toString().padStart(2,'0');
+  const hours=date.getHours().toString().padStart(2,'0');
+  const minutes=date.getMinutes().toString().padStart(2,'0');
+  return day+'.'+month+' в '+hours+':'+minutes;
+}
+
+// ===== СИСТЕМА ЖАЛОБ =====
+
+function openComplaintModal(stationId,stationName){
+  currentComplaintStationId=stationId;
+  document.getElementById('complaint-modal').style.display='flex';
+  document.getElementById('complaint-reason').value='';
+  document.getElementById('complaint-comment').value='';
+}
+
+function closeComplaintModal(){
+  document.getElementById('complaint-modal').style.display='none';
+  currentComplaintStationId=null;
+}
+
+function toggleCommentField(){
+  const reason=document.getElementById('complaint-reason').value;
+  const commentField=document.getElementById('complaint-comment');
+  if(reason==='other'){
+    commentField.placeholder='Опишите проблему...';
+  }else{
+    commentField.placeholder='Опишите проблему подробнее... (опционально)';
+  }
+}
+
+async function submitComplaint(){
+  const reason=document.getElementById('complaint-reason').value;
+  const comment=document.getElementById('complaint-comment').value.trim();
+  
+  if(!reason){alert('Выберите причину жалобы!');return;}
+  if(reason==='other'&&!comment){alert('Для "Другое" необходимо указать комментарий!');return;}
+  
+  const userId=tg?.initDataUnsafe?.user?.id?.toString()||'unknown';
+  
+  try{
+    const response=await fetch(`${API}/stations/${currentComplaintStationId}/complain`,{
+      method:'POST',
+      headers:{...H,'Content-Type':'application/json'},
+      body:JSON.stringify({user_telegram_id:userId,reason:reason,comment:comment||null})
+    });
+    
+    const data=await response.json();
+    
+    if(response.ok){
+      closeComplaintModal();
+      showComplaintSuccess(data);
+      if(data.status_changed){setTimeout(()=>loadStations(),2000);}
+    }else{
+      alert(data.detail||'Ошибка при отправке жалобы');
+    }
+  }catch(error){
+    console.error('Ошибка:',error);
+    alert('Ошибка связи с сервером');
+  }
+}
+
+function showComplaintSuccess(data){
+  const modal=document.getElementById('complaint-success-modal');
+  const textEl=document.getElementById('complaint-success-text');
+  const countEl=document.getElementById('complaint-count-text');
+  
+  textEl.textContent=data.message;
+  
+  if(data.status_changed){
+    countEl.textContent='Статус станции изменен на "Неизвестно"';
+    countEl.style.color='#ef4444';
+  }else{
+    countEl.textContent=`Жалоб от разных пользователей: ${data.complaints_count} из ${data.threshold}`;
+    countEl.style.color='#94a3b8';
+  }
+  
+  modal.style.display='flex';
+}
+
+function closeSuccessModal(){
+  document.getElementById('complaint-success-modal').style.display='none';
+}
+
+console.log('✅ Скрипт загружен');
+</script>
+</body>
+</html>

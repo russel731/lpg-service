@@ -17,30 +17,77 @@
     }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
 
-    #welcome-screen { position: fixed; inset: 0; z-index: 9999; background: linear-gradient(160deg, #0f0c29, #302b63, #24243e); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; }
-    .w-logo { width: 96px; height: 96px; border-radius: 28px; background: linear-gradient(135deg, #22c55e, #16a34a); display: flex; align-items: center; justify-content: center; font-size: 48px; margin-bottom: 20px; box-shadow: 0 12px 40px rgba(34,197,94,0.4); animation: logoPulse 2s ease-in-out infinite; }
-    @keyframes logoPulse { 0%,100%{box-shadow:0 12px 40px rgba(34,197,94,0.4)} 50%{box-shadow:0 12px 60px rgba(34,197,94,0.7)} }
-    .w-title { font-size: 28px; font-weight: 900; color: white; text-align: center; margin-bottom: 6px; letter-spacing: -0.5px; }
-    .w-sub { font-size: 14px; color: rgba(255,255,255,0.5); text-align: center; margin-bottom: 40px; }
-    .lang-row { display: flex; gap: 10px; margin-bottom: 36px; }
-    .lang-btn { flex: 1; padding: 13px 20px; border-radius: 14px; border: 1.5px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.25s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .lang-btn.selected { border-color: var(--green); background: rgba(34,197,94,0.15); color: white; }
-    .w-choose { font-size: 11px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 14px; }
-    .role-cards { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; }
-    .role-card { padding: 18px 20px; border-radius: 18px; border: 1.5px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.05); cursor: pointer; transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1); display: flex; align-items: center; gap: 16px; backdrop-filter: blur(10px); }
-    .role-card:active { transform: scale(0.96); }
-    .role-card.driver:hover { border-color: rgba(59,130,246,0.5); background: rgba(59,130,246,0.1); }
-    .role-card.owner:hover { border-color: rgba(34,197,94,0.5); background: rgba(34,197,94,0.1); }
-    .role-ico { width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 26px; }
-    .role-card.driver .role-ico { background: rgba(59,130,246,0.2); }
-    .role-card.owner .role-ico { background: rgba(34,197,94,0.2); }
-    .role-info { flex: 1; }
-    .role-name { font-size: 16px; font-weight: 700; color: white; margin-bottom: 2px; }
-    .role-desc { font-size: 12px; color: rgba(255,255,255,0.4); }
-    .role-arr { color: rgba(255,255,255,0.2); font-size: 20px; }
+    /* WELCOME */
+    #welcome-screen {
+      position: fixed; inset: 0; z-index: 9999;
+      background: #0a0a0f;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 32px 24px;
+    }
+    .w-logo {
+      width: 88px; height: 88px; border-radius: 26px;
+      background: linear-gradient(135deg,#22c55e,#16a34a);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 44px; margin-bottom: 20px; cursor: pointer;
+      box-shadow: 0 0 0 0 rgba(34,197,94,0.4), 0 20px 60px rgba(34,197,94,0.2);
+      animation: logoPulse 2.5s ease-in-out infinite, logoIn 0.8s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes logoPulse { 0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.4),0 20px 60px rgba(34,197,94,0.2)} 50%{box-shadow:0 0 0 16px rgba(34,197,94,0),0 20px 80px rgba(34,197,94,0.35)} }
+    @keyframes logoIn { from{opacity:0;transform:scale(0.5)} to{opacity:1;transform:scale(1)} }
+    .w-title { font-size:30px; font-weight:900; color:white; text-align:center; margin-bottom:6px; letter-spacing:-1px; }
+    .w-sub { font-size:13px; color:rgba(255,255,255,0.35); text-align:center; margin-bottom:40px; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    #step-lang {
+      display: flex; flex-direction: column; align-items: center;
+      width: 100%; max-width: 320px;
+      animation: fadeUp 0.4s ease forwards;
+    }
+    .step-label { font-size:10px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.25); text-transform:uppercase; margin-bottom:14px; }
+    .lang-row { display:flex; gap:10px; width:100%; }
+    .lang-btn {
+      flex:1; padding:16px; border-radius:16px;
+      border:1.5px solid rgba(255,255,255,0.15);
+      background:rgba(255,255,255,0.08);
+      color:white; font-size:15px; font-weight:600;
+      cursor:pointer; touch-action:manipulation;
+      -webkit-tap-highlight-color: rgba(34,197,94,0.3);
+    }
+    .lang-btn.selected { border-color:#22c55e; background:rgba(34,197,94,0.2); }
+    .step-exit { animation:stepExit 0.4s ease forwards !important; }
+    @keyframes stepExit { to{opacity:0;transform:translateY(-30px)} }
+    #step-role {
+      display:none; flex-direction:column; align-items:center;
+      width:100%; max-width:340px;
+    }
+    .step-enter { animation:fadeUp 0.4s ease forwards !important; }
+    .role-cards { display:flex; flex-direction:column; gap:10px; width:100%; }
+    .role-card {
+      padding:18px 20px; border-radius:18px;
+      border:1.5px solid rgba(255,255,255,0.1);
+      background:rgba(255,255,255,0.06);
+      cursor:pointer; display:flex; align-items:center; gap:16px;
+      touch-action:manipulation;
+      -webkit-tap-highlight-color: rgba(255,255,255,0.1);
+      opacity:0; transform:translateY(20px);
+      transition:opacity 0.4s, transform 0.4s;
+    }
+    .role-card.card-visible { opacity:1; transform:translateY(0); }
+    .role-card:active { opacity:0.7; }
+    .role-ico { width:52px; height:52px; border-radius:14px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:26px; }
+    .role-card.driver .role-ico { background:rgba(59,130,246,0.2); }
+    .role-card.owner .role-ico { background:rgba(34,197,94,0.2); }
+    .role-info { flex:1; }
+    .role-name { font-size:16px; font-weight:700; color:white; margin-bottom:2px; }
+    .role-desc { font-size:12px; color:rgba(255,255,255,0.4); }
+    .role-arr { color:rgba(255,255,255,0.3); font-size:22px; }
+    .welcome-exit { animation:welcomeExit 0.5s ease forwards !important; }
+    @keyframes welcomeExit { to{opacity:0;pointer-events:none} }
 
+    /* ═══════════════════════════════════
+       APP
+    ═══════════════════════════════════ */
     #app { height: 100vh; flex-direction: column; display: none; opacity: 0; transition: opacity 0.4s ease; }
-
     .nav { display: flex; background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-top: 1px solid rgba(0,0,0,0.06); position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-h); z-index: 1000; padding: 0 8px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); }
     .nav-btn { flex: 1; border: none; background: transparent; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--muted); transition: all 0.25s; border-radius: 14px; margin: 6px 2px; position: relative; }
     .nav-btn.active { color: var(--green); }
@@ -48,11 +95,9 @@
     .nav-ico { font-size: 24px; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
     .nav-btn.active .nav-ico { transform: scale(1.15); }
     .nav-txt { font-size: 10px; font-weight: 600; }
-
     .screen { display: none; height: calc(100vh - var(--nav-h)); overflow-y: auto; }
     .screen.active { display: block; animation: fadeIn 0.3s ease; }
     @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
-
     #map { width: 100%; height: calc(100vh - var(--nav-h)); }
     .map-legend { position: absolute; bottom: 80px; left: 12px; z-index: 1000; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 14px; padding: 10px 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); font-size: 12px; }
     .legend-item { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; font-weight: 500; }
@@ -69,7 +114,6 @@
     .nearest-banner { position: absolute; top: 12px; left: 12px; right: 12px; z-index: 1000; background: rgba(255,255,255,0.97); backdrop-filter: blur(16px); border-radius: 16px; padding: 14px 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); display: none; }
     @keyframes slideDown { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
     .nearest-banner.show { display: block; animation: slideDown 0.35s cubic-bezier(0.34,1.56,0.64,1); }
-
     .list-top { padding: 20px 16px 12px; background: white; position: sticky; top: 0; z-index: 10; border-bottom: 1px solid rgba(0,0,0,0.05); }
     .list-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .list-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
@@ -85,7 +129,6 @@
     .filter-chips::-webkit-scrollbar { display: none; }
     .chip { padding: 6px 14px; border-radius: 20px; border: 1.5px solid #e2e8f0; background: white; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s; color: var(--muted); }
     .chip.active { background: var(--green); border-color: var(--green); color: white; }
-
     .station-list { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
     .s-card { background: white; border-radius: 18px; padding: 16px; display: flex; align-items: center; gap: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); transition: transform 0.2s; border: 1.5px solid transparent; cursor: pointer; }
     .s-card:active { transform: scale(0.98); }
@@ -101,8 +144,6 @@
     .empty-ico { font-size: 48px; margin-bottom: 12px; }
     .empty-txt { font-size: 16px; font-weight: 600; margin-bottom: 6px; color: #64748b; }
     .empty-sub { font-size: 13px; }
-
-    /* ДЕТАЛЬНЫЙ ЭКРАН */
     .detail-screen { position: fixed; inset: 0; z-index: 5000; background: var(--bg); transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.32,0.72,0,1); overflow-y: auto; }
     .detail-screen.open { transform: translateY(0); }
     .detail-header { position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,0.95); backdrop-filter: blur(16px); padding: 16px 20px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid rgba(0,0,0,0.06); }
@@ -120,24 +161,15 @@
     .detail-row-info { flex: 1; }
     .detail-row-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
     .detail-row-val { font-size: 15px; font-weight: 600; margin-top: 1px; }
-
-    /* КНОПКА ПОДПИСКИ */
-    .notify-btn {
-      width: 100%; padding: 16px; border: none; border-radius: 16px;
-      font-size: 16px; font-weight: 700; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-      transition: all 0.2s; margin-bottom: 10px;
-    }
+    .notify-btn { width: 100%; padding: 16px; border: none; border-radius: 16px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s; margin-bottom: 10px; }
     .notify-btn:active { transform: scale(0.98); }
     .notify-btn.off { background: #f1f5f9; color: #475569; }
     .notify-btn.on { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; box-shadow: 0 4px 20px rgba(245,158,11,0.35); }
     .notify-no-tg { background: #fef9c3; color: #92400e; padding: 12px 16px; border-radius: 14px; font-size: 13px; margin-bottom: 10px; text-align: center; display: none; }
-
     .share-btn { width: 100%; padding: 16px; border: none; border-radius: 16px; background: linear-gradient(135deg, #2AABEE, #229ED9); color: white; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 20px rgba(42,171,238,0.35); transition: all 0.2s; margin-bottom: 10px; }
     .share-btn:active { transform: scale(0.98); }
     .maps-btn { width: 100%; padding: 16px; border: none; border-radius: 16px; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 20px rgba(34,197,94,0.3); transition: all 0.2s; }
     .maps-btn:active { transform: scale(0.98); }
-
     .owner-wrap { padding: 20px 16px; }
     .panel-hero { background: linear-gradient(135deg, #0f0c29, #302b63); border-radius: 22px; padding: 24px; margin-bottom: 16px; color: white; position: relative; overflow: hidden; }
     .panel-hero::before { content: '⛽'; position: absolute; right: -10px; bottom: -20px; font-size: 100px; opacity: 0.08; }
@@ -163,39 +195,306 @@
     .tab-btn { flex: 1; padding: 9px; border: none; background: transparent; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--muted); border-radius: 10px; transition: all 0.2s; }
     .tab-btn.active { background: white; color: var(--green); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
     .divider { height: 1px; background: #f1f5f9; margin: 14px 0; }
+
+
+    /* ═══════════ ЖАЛОБА / РЕЙТИНГ ═══════════ */
+    .complaint-btn { width: 100%; padding: 16px; border: none; border-radius: 16px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s; margin-bottom: 10px; background: #fef2f2; color: #dc2626; border: 1.5px solid #fecaca; }
+    .complaint-btn:active { transform: scale(0.98); }
+    .complaint-btn.done { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; cursor: default; }
+    .trust-bar-wrap { margin: 4px 0 12px; }
+    .trust-bar-label { display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 700; margin-bottom: 6px; }
+    .trust-bar-track { height: 6px; background: #f1f5f9; border-radius: 6px; overflow: hidden; }
+    .trust-bar-fill { height: 100%; border-radius: 6px; transition: width 0.5s ease, background 0.5s ease; }
+    .complaint-sent-msg { background: #fff7ed; color: #c2410c; padding: 10px 14px; border-radius: 12px; font-size: 13px; margin-bottom: 10px; text-align: center; display: none; border: 1px solid #fed7aa; }
+
+    /* ═══════════ ПРЕМИУМ КАБИНЕТ ═══════════ */
+    .prem-section { background: white; border-radius: 18px; padding: 18px 16px; margin-bottom: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .prem-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; display: flex; align-items: center; gap: 7px; }
+    .prem-badge { display:inline-flex; align-items:center; gap:5px; background:linear-gradient(135deg,#f59e0b,#d97706); color:white; font-size:10px; font-weight:800; padding:3px 10px; border-radius:20px; letter-spacing:0.5px; }
+    .prem-header-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; padding: 0 2px; }
+    .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .svc-btn { display:flex; flex-direction:column; align-items:center; gap:5px; padding:12px 6px; border-radius:14px; border:1.5px solid #e2e8f0; background:#f8fafc; cursor:pointer; transition:all 0.2s; font-size:11px; font-weight:600; color:var(--muted); }
+    .svc-btn .svc-ico { font-size:22px; }
+    .svc-btn.active { border-color:var(--green); background:rgba(34,197,94,0.08); color:var(--green); }
+    .svc-btn:active { transform:scale(0.95); }
+    .queue-labels { display:flex; justify-content:space-between; font-size:11px; font-weight:600; margin-bottom:8px; }
+    .queue-slider { -webkit-appearance:none; appearance:none; width:100%; height:8px; border-radius:8px; outline:none; cursor:pointer; background:linear-gradient(to right,#22c55e 0%,#eab308 50%,#ef4444 100%); }
+    .queue-slider::-webkit-slider-thumb { -webkit-appearance:none; width:24px; height:24px; border-radius:50%; background:white; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.2); border:2.5px solid #cbd5e1; }
+    .queue-val { text-align:center; font-size:13px; font-weight:700; margin-top:10px; }
+    .remind-chips { display:flex; gap:6px; flex-wrap:wrap; }
+    .remind-chip { padding:8px 14px; border-radius:20px; border:1.5px solid #e2e8f0; background:#f8fafc; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; color:var(--muted); }
+    .remind-chip.active { border-color:var(--blue); background:rgba(59,130,246,0.08); color:var(--blue); }
+    .photos-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .photo-slot { aspect-ratio:1; border-radius:12px; overflow:hidden; background:#f1f5f9; display:flex; align-items:center; justify-content:center; position:relative; cursor:pointer; border:1.5px dashed #cbd5e1; }
+    .photo-slot img { width:100%; height:100%; object-fit:cover; }
+    .photo-add-ico { font-size:28px; color:#cbd5e1; }
+    .photo-del { position:absolute; top:4px; right:4px; background:rgba(0,0,0,0.55); color:white; border:none; border-radius:50%; width:22px; height:22px; font-size:11px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+    .trusted-list { display:flex; flex-direction:column; gap:8px; margin-bottom:10px; }
+    .trusted-item { display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:14px; background:#f8fafc; border:1.5px solid #e2e8f0; }
+    .trusted-ava { width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,#3b82f6,#6366f1); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:15px; flex-shrink:0; }
+    .trusted-info { flex:1; }
+    .trusted-name-txt { font-weight:700; font-size:14px; }
+    .trusted-tg-txt { font-size:11px; color:var(--muted); }
+    .trusted-del { background:#fef2f2; border:none; border-radius:8px; width:32px; height:32px; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; }
+    .trusted-add { display:flex; flex-direction:column; gap:8px; }
+
+    /* ═══════════ ЦЕНА ГАЗА ═══════════ */
+    .price-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    }
+
+    .price-input {
+    flex: 1;
+    padding: 13px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    outline: none;
+    background: #f8fafc;
+    transition: all 0.2s;
+    color: var(--text);
+    }
+
+    .price-input:focus {
+     border-color: var(--green);
+     background: white;
+     box-shadow: 0 0 0 3px rgba(34,197,94,0.1);
+    }
+
+    .price-currency {
+     font-size: 20px;
+     font-weight: 800;
+     color: var(--green);
+     white-space: nowrap;
+    }
+
+    .price-label {
+     font-size: 13px;
+     color: var(--muted);
+     font-weight: 600;
+     white-space: nowrap;
+    }
+
+    .price-hint {
+     font-size: 12px;
+     color: var(--muted);
+     text-align: center;
+     padding: 8px 12px;
+     background: rgba(34, 197, 94, 0.05);
+     border-radius: 8px;
+    }
+    /* ═══════════ АДМИН ПАНЕЛЬ ═══════════ */
+    .admin-wrap { padding: 16px; padding-bottom: 80px; }
+    .admin-hero { background: linear-gradient(135deg, #1e1b4b, #312e81); border-radius: 22px; padding: 20px 24px; margin-bottom: 16px; color: white; position: relative; overflow: hidden; }
+    .admin-hero::before { content: '⚙️'; position: absolute; right: -8px; bottom: -16px; font-size: 90px; opacity: 0.1; }
+    .admin-hero-title { font-size: 20px; font-weight: 900; margin-bottom: 2px; }
+    .admin-hero-sub { font-size: 12px; opacity: 0.5; }
+    .admin-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+    .stat-card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); text-align: center; }
+    .stat-num { font-size: 28px; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+    .stat-lbl { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .admin-section { background: white; border-radius: 18px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); overflow: hidden; }
+    .admin-section-hdr { padding: 16px 18px 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; cursor: pointer; }
+    .admin-section-title { font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+    .admin-section-body { padding: 14px 18px; }
+    .admin-section-body.collapsed { display: none; }
+    .admin-badge { font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 20px; }
+    .badge-orange { background: rgba(249,115,22,0.12); color: #ea580c; }
+    .badge-red { background: rgba(239,68,68,0.12); color: #dc2626; }
+    .badge-green { background: rgba(34,197,94,0.12); color: #16a34a; }
+    .badge-blue { background: rgba(59,130,246,0.12); color: #2563eb; }
+    /* Заявки */
+    .req-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f8fafc; }
+    .req-item:last-child { border-bottom: none; }
+    .req-ava { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 16px; flex-shrink: 0; }
+    .req-info { flex: 1; min-width: 0; }
+    .req-name { font-weight: 700; font-size: 14px; }
+    .req-meta { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .req-actions { display: flex; gap: 6px; }
+    .btn-approve { background: rgba(34,197,94,0.1); color: #16a34a; border: none; border-radius: 10px; padding: 7px 12px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .btn-reject  { background: rgba(239,68,68,0.1); color: #dc2626; border: none; border-radius: 10px; padding: 7px 12px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .btn-approve:active,.btn-reject:active { transform: scale(0.96); }
+    /* Станции */
+    .station-admin-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f8fafc; }
+    .station-admin-item:last-child { border-bottom: none; }
+    .station-admin-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .station-admin-info { flex: 1; min-width: 0; }
+    .station-admin-name { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .station-admin-meta { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .btn-sm-gray { background: #f1f5f9; color: #475569; border: none; border-radius: 8px; padding: 6px 10px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    /* Жалобы */
+    .complaint-admin-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f8fafc; }
+    .complaint-admin-item:last-child { border-bottom: none; }
+    .complaint-bar { flex: 1; }
+    .complaint-bar-name { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+    .complaint-bar-track { height: 6px; background: #f1f5f9; border-radius: 6px; overflow: hidden; }
+    .complaint-bar-fill { height: 100%; border-radius: 6px; background: #ef4444; }
+    .complaint-bar-meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
+    /* Настройки */
+    .settings-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f8fafc; }
+    .settings-row:last-child { border-bottom: none; }
+    .settings-label { font-size: 14px; font-weight: 600; }
+    .settings-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .settings-val { display: flex; align-items: center; gap: 8px; }
+    .num-input { width: 64px; padding: 8px 10px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 15px; font-weight: 700; text-align: center; outline: none; }
+    .num-input:focus { border-color: var(--green); }
+    .btn-save-sm { background: var(--green); color: white; border: none; border-radius: 10px; padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    /* Добавление станции */
+    .admin-map-preview { width: 100%; height: 160px; border-radius: 14px; overflow: hidden; background: #f1f5f9; margin-bottom: 10px; }
+    #admin-pick-map { width: 100%; height: 100%; }
+    .empty-admin { text-align: center; padding: 24px 16px; color: var(--muted); font-size: 13px; }
+
+    /* ═══════════ СЕКРЕТНЫЙ ВХОД + ФИДБЭК ═══════════ */
+    .logo-tap-hint { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(34,197,94,0.15); border: 1.5px solid rgba(34,197,94,0.4); border-radius: 16px; padding: 10px 20px; color: #22c55e; font-size: 13px; font-weight: 700; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 99999; }
+    .logo-tap-hint.show { opacity: 1; }
+
+    /* Обратная связь — экран */
+    .feedback-screen-wrap { padding: 16px; padding-bottom: 80px; }
+    .feedback-hero { background: linear-gradient(135deg, #0c4a6e, #075985); border-radius: 22px; padding: 22px 24px; margin-bottom: 16px; color: white; position: relative; overflow: hidden; }
+    .feedback-hero::before { content: '💬'; position: absolute; right: -8px; bottom: -16px; font-size: 90px; opacity: 0.1; }
+    .feedback-hero h2 { font-size: 20px; font-weight: 900; margin-bottom: 3px; }
+    .feedback-hero p { font-size: 12px; opacity: 0.5; }
+
+    .feedback-cat-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 14px; }
+    .fcat-btn { padding: 14px 10px; border-radius: 16px; border: 1.5px solid #e2e8f0; background: #f8fafc; cursor: pointer; text-align: center; transition: all 0.2s; }
+    .fcat-btn .fcat-ico { font-size: 24px; margin-bottom: 4px; }
+    .fcat-btn .fcat-lbl { font-size: 12px; font-weight: 600; color: var(--muted); }
+    .fcat-btn.active { border-color: var(--blue); background: rgba(59,130,246,0.08); }
+    .fcat-btn.active .fcat-lbl { color: var(--blue); }
+    .fcat-btn:active { transform: scale(0.97); }
+
+    .fb-station-select { width: 100%; padding: 13px 14px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 14px; outline: none; background: #f8fafc; margin-bottom: 10px; }
+    .fb-station-select:focus { border-color: var(--blue); }
+    .fb-textarea { width: 100%; padding: 13px 14px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 14px; outline: none; background: #f8fafc; resize: none; min-height: 110px; font-family: inherit; line-height: 1.5; transition: all 0.2s; }
+    .fb-textarea:focus { border-color: var(--blue); background: white; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+    .fb-submit-btn { width: 100%; padding: 16px; border: none; border-radius: 16px; background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 20px rgba(14,165,233,0.35); transition: all 0.2s; }
+    .fb-submit-btn:active { transform: scale(0.98); }
+    .fb-submit-btn:disabled { background: #e2e8f0; color: var(--muted); box-shadow: none; }
+    .fb-success { background: #f0fdf4; color: #166634; padding: 16px; border-radius: 14px; text-align: center; font-weight: 600; font-size: 14px; border: 1px solid #bbf7d0; display: none; }
+
+    /* История обратной связи в админке */
+    .fb-admin-item { padding: 12px 0; border-bottom: 1px solid #f8fafc; }
+    .fb-admin-item:last-child { border-bottom: none; }
+    .fb-admin-cat { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-bottom: 4px; }
+    .fb-admin-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+    .fb-admin-meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+    /* ═══════════ ОБРАТНАЯ СВЯЗЬ ═══════════ */
+    .feedback-fab { position: fixed; bottom: calc(var(--nav-h) + 12px); right: 14px; z-index: 900;
+      width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer;
+      background: linear-gradient(135deg, #2AABEE, #229ED9);
+      box-shadow: 0 4px 20px rgba(42,171,238,0.4);
+      font-size: 22px; display: flex; align-items: center; justify-content: center;
+      transition: transform 0.2s; }
+    .feedback-fab:active { transform: scale(0.92); }
+    .feedback-sheet { position: fixed; inset: 0; z-index: 6000; display: none; }
+    .feedback-sheet.open { display: block; }
+    .feedback-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); }
+    .feedback-card { position: absolute; bottom: 0; left: 0; right: 0;
+      background: white; border-radius: 24px 24px 0 0; padding: 20px 20px 36px;
+      transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.32,0.72,0,1); }
+    .feedback-sheet.open .feedback-card { transform: translateY(0); }
+    .feedback-handle { width: 40px; height: 4px; background: #e2e8f0; border-radius: 4px; margin: 0 auto 18px; }
+    .feedback-title { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+    .feedback-sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+    .feedback-category { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .fcat-btn { padding: 7px 14px; border-radius: 20px; border: 1.5px solid #e2e8f0;
+      background: #f8fafc; font-size: 12px; font-weight: 600; cursor: pointer;
+      color: var(--muted); transition: all 0.2s; }
+    .fcat-btn.active { border-color: var(--blue); background: rgba(59,130,246,0.08); color: var(--blue); }
+    .feedback-textarea { width: 100%; min-height: 100px; padding: 12px 14px;
+      border: 1.5px solid #e2e8f0; border-radius: 14px; font-size: 14px;
+      font-family: inherit; resize: none; outline: none; background: #f8fafc;
+      transition: all 0.2s; margin-bottom: 12px; }
+    .feedback-textarea:focus { border-color: var(--blue); background: white; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+    .feedback-actions { display: flex; gap: 10px; }
+    .feedback-send-btn { flex: 1; padding: 14px; border: none; border-radius: 14px;
+      background: linear-gradient(135deg, #2AABEE, #229ED9); color: white;
+      font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .feedback-send-btn:active { transform: scale(0.98); }
+    .feedback-tg-btn { padding: 14px 16px; border: none; border-radius: 14px;
+      background: #f1f5f9; color: #475569; font-size: 15px; font-weight: 700;
+      cursor: pointer; white-space: nowrap; }
+    .feedback-success { text-align: center; padding: 24px 0; display: none; }
+    .feedback-success-ico { font-size: 48px; margin-bottom: 12px; }
+    .feedback-success-txt { font-size: 16px; font-weight: 700; color: var(--green); }
+
+    /* ЧАСЫ РАБОТЫ */
+    .hours-card { background:white; border-radius:18px; padding:20px; margin-bottom:14px; box-shadow:0 2px 12px rgba(0,0,0,0.06); }
+    .hours-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .hours-title-txt { font-size:13px; font-weight:800; color:var(--text); }
+    .hours-24-toggle { display:flex; align-items:center; gap:8px; }
+    .toggle-label { font-size:12px; color:var(--muted); font-weight:600; }
+    .toggle-switch { position:relative; width:44px; height:24px; }
+    .toggle-switch input { opacity:0; width:0; height:0; }
+    .toggle-slider { position:absolute; inset:0; background:#e2e8f0; border-radius:24px; cursor:pointer; transition:0.3s; }
+    .toggle-slider::before { content:''; position:absolute; width:18px; height:18px; left:3px; bottom:3px; background:white; border-radius:50%; transition:0.3s; box-shadow:0 1px 4px rgba(0,0,0,0.2); }
+    .toggle-switch input:checked + .toggle-slider { background:var(--green); }
+    .toggle-switch input:checked + .toggle-slider::before { transform:translateX(20px); }
+    .days-grid { display:flex; flex-direction:column; gap:8px; }
+    .day-row { display:flex; align-items:center; gap:10px; }
+    .day-name { width:32px; font-size:12px; font-weight:700; color:var(--muted); flex-shrink:0; }
+    .day-toggle { width:36px; height:20px; position:relative; flex-shrink:0; }
+    .day-toggle input { opacity:0; width:0; height:0; }
+    .day-slider { position:absolute; inset:0; background:#e2e8f0; border-radius:20px; cursor:pointer; transition:0.3s; }
+    .day-slider::before { content:''; position:absolute; width:14px; height:14px; left:3px; bottom:3px; background:white; border-radius:50%; transition:0.3s; box-shadow:0 1px 3px rgba(0,0,0,0.2); }
+    .day-toggle input:checked + .day-slider { background:var(--green); }
+    .day-toggle input:checked + .day-slider::before { transform:translateX(16px); }
+    .day-times { display:flex; align-items:center; gap:6px; flex:1; }
+    .time-input { flex:1; padding:7px 10px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:13px; font-weight:600; text-align:center; outline:none; color:var(--text); background:#f8fafc; transition:all 0.2s; }
+    .time-input:focus { border-color:var(--green); background:white; }
+    .time-sep { color:var(--muted); font-weight:700; font-size:13px; }
+    .day-closed { flex:1; font-size:12px; color:var(--muted); font-style:italic; }
+    .hours-save-btn { width:100%; padding:13px; border:none; border-radius:13px; background:linear-gradient(135deg,var(--green),var(--green-dark)); color:white; font-size:14px; font-weight:700; cursor:pointer; margin-top:14px; transition:all 0.2s; }
+    .hours-save-btn:active { transform:scale(0.98); }
+    .hours-open-now { display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:700; margin-bottom:8px; }
+    .hours-open-now.open { background:rgba(34,197,94,0.12); color:#16a34a; }
+    .hours-open-now.closed { background:rgba(239,68,68,0.1); color:#dc2626; }
   </style>
 </head>
 <body>
 
+<!-- WELCOME SCREEN -->
 <div id="welcome-screen">
-  <div class="w-logo">⛽</div>
+  <div class="w-logo" id="w-logo" onclick="handleLogoTap()">⛽</div>
   <div class="w-title">АГЗС Мониторинг</div>
   <div class="w-sub" id="city-sub">Қазақстан · Kazakhstan</div>
-  <div class="lang-row">
-    <button class="lang-btn selected" id="btn-kz" onclick="selectLang('kz')">🇰🇿 Қазақша</button>
-    <button class="lang-btn" id="btn-ru" onclick="selectLang('ru')">🇷🇺 Русский</button>
-  </div>
-  <div class="w-choose" id="w-choose">КІМ ЕКЕНІҢІЗДІ ТАҢДАҢЫЗ</div>
-  <div class="role-cards">
-    <div class="role-card driver" onclick="enterAs('driver')">
-      <div class="role-ico">🚗</div>
-      <div class="role-info">
-        <div class="role-name" id="r-driver">Мен жүргізушімін</div>
-        <div class="role-desc" id="r-driver-desc">Жақын АГЗС-ті іздеу</div>
-      </div>
-      <div class="role-arr">›</div>
+  <div id="step-lang">
+    <div class="step-label">Тілді таңдаңыз · Выберите язык</div>
+    <div class="lang-row">
+      <button class="lang-btn selected" id="btn-kz" onclick="selectLang('kz')">🇰🇿 Қазақша</button>
+      <button class="lang-btn" id="btn-ru" onclick="selectLang('ru')">🇷🇺 Русский</button>
     </div>
-    <div class="role-card owner" onclick="enterAs('owner')">
-      <div class="role-ico">⛽</div>
-      <div class="role-info">
-        <div class="role-name" id="r-owner">Мен иесімін</div>
-        <div class="role-desc" id="r-owner-desc">Станцияны басқару</div>
+  </div>
+  <div id="step-role">
+    <div class="step-label" id="w-choose">КІМ ЕКЕНІҢІЗДІ ТАҢДАҢЫЗ</div>
+    <div class="role-cards">
+      <div class="role-card driver" onclick="enterAs('driver')">
+        <div class="role-ico">🚗</div>
+        <div class="role-info">
+          <div class="role-name" id="r-driver">Мен жүргізушімін</div>
+          <div class="role-desc" id="r-driver-desc">Жақын АГЗС-ті іздеу</div>
+        </div>
+        <div class="role-arr">›</div>
       </div>
-      <div class="role-arr">›</div>
+      <div class="role-card owner" onclick="enterAs('owner')">
+        <div class="role-ico">⛽</div>
+        <div class="role-info">
+          <div class="role-name" id="r-owner">Мен иесімін</div>
+          <div class="role-desc" id="r-owner-desc">Станцияны басқару</div>
+        </div>
+        <div class="role-arr">›</div>
+      </div>
     </div>
   </div>
 </div>
 
+<!-- APP -->
 <div id="app">
   <div id="map-screen" class="screen active" style="position:relative">
     <div id="map"></div>
@@ -295,7 +594,301 @@
           <button class="o-btn o-btn-red" onclick="setMyStatus('red')" id="dash-btn-red">🔴 Газ жоқ</button>
           <div id="update-success" style="display:none" class="success-msg">✅ <span id="updated-txt">Статус жаңартылды!</span></div>
         </div>
+
+
+        <!-- ЧАСЫ РАБОТЫ -->
+        <div class="hours-card" id="hours-card">
+          <div class="hours-header">
+            <span class="o-label" id="hours-title-lbl" style="margin-bottom:0">⏰ ЧАСЫ РАБОТЫ</span>
+            <div class="hours-24-toggle">
+              <span class="toggle-label" id="hours-24-lbl">Круглосуточно</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle-24h" onchange="toggle24h(this.checked)"/>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+          <div id="hours-open-badge" style="display:none"></div>
+          <div id="days-grid-wrap" class="days-grid"></div>
+          <button class="hours-save-btn" onclick="saveHours()" id="hours-save-btn">Сохранить</button>
+        </div>
+        <!-- ═══ ПРЕМИУМ СЕКЦИИ ═══ -->
+        <div id="premium-wrap" style="display:none">
+          <div class="prem-header-row">
+            <div style="font-size:16px;font-weight:800" id="ph-title">✨ Премиум</div>
+            <span class="prem-badge">⭐ Premium</span>
+          </div>
+
+          <div class="prem-section">
+            <div class="prem-title">🛎️ <span id="pt-svc">Доп услуги</span></div>
+            <div class="services-grid">
+              <button class="svc-btn" data-svc="wash" onclick="toggleSvc('wash',this)"><span class="svc-ico">🚿</span><span id="s-wash">Автомойка</span></button>
+              <button class="svc-btn" data-svc="air"  onclick="toggleSvc('air',this)"><span class="svc-ico">💨</span><span id="s-air">Подкачка</span></button>
+              <button class="svc-btn" data-svc="shop" onclick="toggleSvc('shop',this)"><span class="svc-ico">🛒</span><span id="s-shop">Магазин</span></button>
+              <button class="svc-btn" data-svc="cafe" onclick="toggleSvc('cafe',this)"><span class="svc-ico">☕</span><span id="s-cafe">Кафе</span></button>
+              <button class="svc-btn" data-svc="tire" onclick="toggleSvc('tire',this)"><span class="svc-ico">🔧</span><span id="s-tire">Шиномонтаж</span></button>
+              <button class="svc-btn" data-svc="vacuum" onclick="toggleSvc('vacuum',this)"><span class="svc-ico">🌀</span><span id="s-vacuum">Пылесос</span></button>
+            </div>
+          </div>
+
+          <div class="prem-section">
+            <div class="prem-title">🚦 <span id="pt-queue">Интенсивность очереди</span></div>
+            <div class="queue-labels">
+              <span style="color:#22c55e" id="ql-free">Свободно</span>
+              <span style="color:#eab308" id="ql-mid">Умеренно</span>
+              <span style="color:#ef4444" id="ql-busy">Очередь</span>
+            </div>
+            <input type="range" class="queue-slider" id="queue-slider" min="0" max="100" value="0"
+              oninput="onQueueSlide(this.value)" onchange="saveQueue(this.value)"/>
+            <div class="queue-val" id="queue-val">😊 Очереди нет</div>
+          </div>
+          <!-- ЦЕНА ГАЗА -->
+          <div class="prem-section">
+            <div class="prem-title">💰 <span id="pt-price">Стоимость газа</span></div>
+            <div class="price-input-wrap">
+              <input type="number" class="price-input" id="gas-price-input" 
+                placeholder="200" min="0" step="1" 
+                oninput="onGasPriceChange(this.value)"/>
+              <span class="price-currency">₸</span>
+              <span class="price-label" id="price-label">за литр</span>
+            </div>
+            <div class="price-hint">
+              <span id="price-hint-txt">Укажите текущую цену за литр газа</span>
+            </div>
+          </div>
+
+          <div class="prem-section">
+            <div class="prem-title">⏰ <span id="pt-remind">Напоминание об обновлении</span></div>
+            <div class="remind-chips">
+              <div class="remind-chip" data-min="30"  onclick="pickRemind(30,this)"  id="rc30">30 мин</div>
+              <div class="remind-chip" data-min="60"  onclick="pickRemind(60,this)"  id="rc60">1 час</div>
+              <div class="remind-chip active" data-min="120" onclick="pickRemind(120,this)" id="rc120">2 часа</div>
+              <div class="remind-chip" data-min="240" onclick="pickRemind(240,this)" id="rc240">4 часа</div>
+              <div class="remind-chip" data-min="480" onclick="pickRemind(480,this)" id="rc480">8 часов</div>
+            </div>
+          </div>
+
+          <div class="prem-section">
+            <div class="prem-title">📷 <span id="pt-photo">Фотографии станции</span></div>
+            <div class="photos-grid" id="photos-grid"></div>
+            <input type="file" id="photo-file" accept="image/*" style="display:none" onchange="uploadPhoto(event)"/>
+          </div>
+
+          <div class="prem-section">
+            <div class="prem-title">
+              👥 <span id="pt-trusted">Доверенные пользователи</span>
+              <span style="font-size:10px;color:#cbd5e1;font-weight:400;margin-left:auto" id="trusted-cnt">(0/3)</span>
+            </div>
+            <div class="trusted-list" id="trusted-list"></div>
+            <div class="trusted-add" id="trusted-add-form">
+              <input class="o-input" id="tr-tgid" type="text" placeholder="Telegram ID (числовой)"/>
+              <input class="o-input" id="tr-name" type="text" placeholder="Имя"/>
+              <button class="o-btn o-btn-outline" onclick="addTrusted()" id="btn-tr-add">+ Добавить</button>
+            </div>
+          </div>
+        </div><!-- /premium-wrap -->
+
         <button class="o-btn o-btn-gray" onclick="doLogout()" id="btn-logout" style="margin-top:4px">🚪 Шығу</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN SCREEN -->
+  <div id="admin-screen" class="screen">
+    <div class="admin-wrap">
+
+      <!-- ВХОД В АДМИНКУ -->
+      <div id="admin-login-panel">
+        <div class="admin-hero" style="margin-bottom:20px">
+          <div class="admin-hero-title">⚙️ Админ панель</div>
+          <div class="admin-hero-sub" id="adm-login-sub">Введите пароль для входа</div>
+        </div>
+        <div class="o-card">
+          <div class="o-group">
+            <label class="o-label" id="adm-lbl-pw">ПАРОЛЬ АДМИНИСТРАТОРА</label>
+            <input class="o-input" id="adm-password" type="password" placeholder="••••••••"
+              onkeydown="if(event.key==='Enter')doAdminLogin()"/>
+          </div>
+          <div id="adm-login-error" style="display:none" class="error-msg"></div>
+          <button class="o-btn o-btn-primary" onclick="doAdminLogin()" id="adm-btn-login">Войти</button>
+          <button class="o-btn o-btn-gray" onclick="showScreen('map-screen',0)" id="adm-btn-back">← Назад</button>
+        </div>
+      </div>
+
+      <!-- СОДЕРЖИМОЕ АДМИНКИ -->
+      <div id="admin-content-panel" style="display:none">
+        <div class="admin-hero" style="margin-bottom:16px">
+        <div class="admin-hero-title">⚙️ Админ панель</div>
+        <div class="admin-hero-sub" id="adm-hero-sub">Управление системой</div>
+      </div>
+
+      <!-- Статистика -->
+      <div class="admin-stats">
+        <div class="stat-card">
+          <div class="stat-num" id="adm-stat-stations" style="color:var(--green)">—</div>
+          <div class="stat-lbl" id="adm-lbl-stations">Станций</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="adm-stat-owners" style="color:var(--blue)">—</div>
+          <div class="stat-lbl" id="adm-lbl-owners">Владельцев</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="adm-stat-pending" style="color:#f59e0b">—</div>
+          <div class="stat-lbl" id="adm-lbl-pending">Заявок</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="adm-stat-complaints" style="color:var(--red)">—</div>
+          <div class="stat-lbl" id="adm-lbl-complaints">Жалоб</div>
+        </div>
+      </div>
+
+      <!-- 1. Заявки владельцев -->
+      <div class="admin-section" id="adm-sec-users">
+        <div class="admin-section-hdr" onclick="toggleAdmSection('adm-body-users',this)">
+          <div class="admin-section-title">👤 <span id="adm-title-users">Заявки владельцев</span></div>
+          <span class="admin-badge badge-orange" id="adm-badge-users">0</span>
+        </div>
+        <div class="admin-section-body" id="adm-body-users">
+          <div id="adm-users-list"><div class="empty-admin">Загрузка...</div></div>
+        </div>
+      </div>
+
+      <!-- 2. Станции -->
+      <div class="admin-section" id="adm-sec-stations">
+        <div class="admin-section-hdr" onclick="toggleAdmSection('adm-body-stations',this)">
+          <div class="admin-section-title">⛽ <span id="adm-title-stations">Станции</span></div>
+          <span class="admin-badge badge-blue" id="adm-badge-stations">0</span>
+        </div>
+        <div class="admin-section-body collapsed" id="adm-body-stations">
+          <!-- Добавить станцию -->
+          <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #f1f5f9">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px" id="adm-add-station-title">Добавить станцию</div>
+            <input class="o-input" id="adm-st-name" type="text" placeholder="Название станции" style="margin-bottom:8px"/>
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+              <input class="o-input" id="adm-st-lat" type="number" placeholder="Широта 43.65" step="0.0001"/>
+              <input class="o-input" id="adm-st-lon" type="number" placeholder="Долгота 51.17" step="0.0001"/>
+            </div>
+            <button class="o-btn o-btn-primary" style="margin-bottom:0" onclick="adminAddStation()">+ <span id="adm-btn-add-st">Добавить</span></button>
+          </div>
+          <div id="adm-stations-list"><div class="empty-admin">Загрузка...</div></div>
+        </div>
+      </div>
+
+      <!-- 3. Жалобы -->
+      <div class="admin-section">
+        <div class="admin-section-hdr" onclick="toggleAdmSection('adm-body-complaints',this)">
+          <div class="admin-section-title">⚠️ <span id="adm-title-complaints">Жалобы</span></div>
+          <span class="admin-badge badge-red" id="adm-badge-complaints">0</span>
+        </div>
+        <div class="admin-section-body collapsed" id="adm-body-complaints">
+          <div id="adm-complaints-list"><div class="empty-admin">Загрузка...</div></div>
+        </div>
+      </div>
+
+      <!-- 4. Обратная связь -->
+      <div class="admin-section">
+        <div class="admin-section-hdr" onclick="toggleAdmSection('adm-body-feedback',this)">
+          <div class="admin-section-title">💬 <span id="adm-title-feedback">Обратная связь</span></div>
+          <span class="admin-badge badge-blue" id="adm-badge-feedback">0</span>
+        </div>
+        <div class="admin-section-body collapsed" id="adm-body-feedback">
+          <div id="adm-feedback-list"><div class="empty-admin">Загрузка...</div></div>
+        </div>
+      </div>
+
+      <!-- 5. Настройки -->
+      <div class="admin-section">
+        <div class="admin-section-hdr" onclick="toggleAdmSection('adm-body-settings',this)">
+          <div class="admin-section-title">⚙️ <span id="adm-title-settings">Настройки</span></div>
+          <span style="font-size:18px;color:var(--muted)" id="adm-arrow-settings">›</span>
+        </div>
+        <div class="admin-section-body collapsed" id="adm-body-settings">
+          <div class="settings-row">
+            <div>
+              <div class="settings-label" id="adm-st-threshold-lbl">Порог жалоб</div>
+              <div class="settings-sub" id="adm-st-threshold-sub">Жалоб до фиолетового статуса</div>
+            </div>
+            <div class="settings-val">
+              <input class="num-input" id="adm-threshold-val" type="number" min="1" max="100" value="5"/>
+              <button class="btn-save-sm" onclick="saveThreshold()">✓</button>
+            </div>
+          </div>
+          <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:8px">
+            <div>
+              <div class="settings-label" id="adm-st-tgid-lbl">Telegram ID для уведомлений</div>
+              <div class="settings-sub" id="adm-st-tgid-sub">Куда приходят сообщения обратной связи</div>
+            </div>
+            <div style="display:flex;gap:8px;width:100%">
+              <input class="o-input" id="adm-tgid-val" type="text" placeholder="123456789" style="flex:1;padding:8px 12px"/>
+              <button class="btn-save-sm" onclick="saveAdminTgId()">✓</button>
+            </div>
+          </div>
+          <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:8px">
+            <div>
+              <div class="settings-label" id="adm-st-tgids-lbl">Telegram ID администраторов</div>
+              <div class="settings-sub" id="adm-st-tgids-sub">Автовход без пароля (через запятую)</div>
+            </div>
+            <div style="display:flex;gap:8px;width:100%">
+              <input class="o-input" id="adm-tgids-val" type="text" placeholder="123456,789012" style="flex:1;padding:8px 12px"/>
+              <button class="btn-save-sm" onclick="saveAdminTgIds()">✓</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+        <button class="o-btn o-btn-gray" onclick="doAdminLogout()" style="margin-top:4px" id="adm-btn-logout">🚪 Выйти из админки</button>
+      </div><!-- /admin-content-panel -->
+    </div>
+  </div>
+
+  <!-- FEEDBACK SCREEN -->
+  <div id="feedback-screen" class="screen">
+    <div class="feedback-screen-wrap">
+      <div class="feedback-hero">
+        <h2 id="fb-hero-title">💬 Обратная связь</h2>
+        <p id="fb-hero-sub">Помогите нам стать лучше</p>
+      </div>
+
+      <!-- Категории -->
+      <div class="o-card" style="padding:16px">
+        <span class="o-label" id="fb-lbl-cat">КАТЕГОРИЯ</span>
+        <div class="feedback-cat-grid">
+          <div class="fcat-btn active" data-cat="station" onclick="selectFbCat('station',this)">
+            <div class="fcat-ico">⛽</div>
+            <div class="fcat-lbl" id="fcat-station">О станции</div>
+          </div>
+          <div class="fcat-btn" data-cat="bug" onclick="selectFbCat('bug',this)">
+            <div class="fcat-ico">🐛</div>
+            <div class="fcat-lbl" id="fcat-bug">Ошибка</div>
+          </div>
+          <div class="fcat-btn" data-cat="idea" onclick="selectFbCat('idea',this)">
+            <div class="fcat-ico">💡</div>
+            <div class="fcat-lbl" id="fcat-idea">Предложение</div>
+          </div>
+          <div class="fcat-btn" data-cat="other" onclick="selectFbCat('other',this)">
+            <div class="fcat-ico">✉️</div>
+            <div class="fcat-lbl" id="fcat-other">Другое</div>
+          </div>
+        </div>
+
+        <!-- Выбор станции (только для категории station) -->
+        <div id="fb-station-wrap">
+          <span class="o-label" id="fb-lbl-station">СТАНЦИЯ</span>
+          <select class="fb-station-select" id="fb-station-sel">
+            <option value="">— Выберите станцию —</option>
+          </select>
+        </div>
+
+        <span class="o-label" id="fb-lbl-msg">СООБЩЕНИЕ</span>
+        <textarea class="fb-textarea" id="fb-text" id="fb-lbl-placeholder" placeholder="Опишите подробнее..."></textarea>
+
+        <div id="fb-success-msg" class="fb-success">
+          ✅ <span id="fb-success-txt">Спасибо! Мы получили ваше сообщение.</span>
+        </div>
+
+        <button class="fb-submit-btn" id="fb-submit-btn" onclick="submitFeedback()" style="margin-top:12px">
+          <span>📨</span><span id="fb-btn-txt">Отправить</span>
+        </button>
       </div>
     </div>
   </div>
@@ -307,9 +900,44 @@
     <button class="nav-btn" id="nav-list" onclick="showScreen('list-screen',1)">
       <span class="nav-ico">📋</span><span class="nav-txt" id="nav-list-txt">Тізім</span>
     </button>
-    <button class="nav-btn" id="nav-owner" onclick="showScreen('owner-screen',2)" style="display:none">
+    <button class="nav-btn" id="nav-feedback" onclick="showScreen('feedback-screen',2)">
+      <span class="nav-ico">💬</span><span class="nav-txt" id="nav-feedback-txt">Отзыв</span>
+    </button>
+    <button class="nav-btn" id="nav-owner" onclick="showScreen('owner-screen',3)" style="display:none">
       <span class="nav-ico">👤</span><span class="nav-txt" id="nav-owner-txt">Кабинет</span>
     </button>
+  </div>
+</div>
+
+
+
+<!-- КНОПКА ОБРАТНОЙ СВЯЗИ -->
+<button class="feedback-fab" id="feedback-fab" onclick="openFeedback()" style="display:none" title="Обратная связь">💬</button>
+
+<!-- SHEET ОБРАТНОЙ СВЯЗИ -->
+<div class="feedback-sheet" id="feedback-sheet">
+  <div class="feedback-overlay" onclick="closeFeedback()"></div>
+  <div class="feedback-card">
+    <div class="feedback-handle"></div>
+    <div id="feedback-form-wrap">
+      <div class="feedback-title" id="fb-title">💬 Обратная связь</div>
+      <div class="feedback-sub" id="fb-sub">Напишите нам — мы читаем каждое сообщение</div>
+      <div class="feedback-category">
+        <button class="fcat-btn active" data-cat="bug" onclick="selectFbCat('bug',this)" id="fcat-bug">🐛 Ошибка</button>
+        <button class="fcat-btn" data-cat="idea" onclick="selectFbCat('idea',this)" id="fcat-idea">💡 Идея</button>
+        <button class="fcat-btn" data-cat="station" onclick="selectFbCat('station',this)" id="fcat-station">⛽ Станция</button>
+        <button class="fcat-btn" data-cat="other" onclick="selectFbCat('other',this)" id="fcat-other">📝 Другое</button>
+      </div>
+      <textarea class="feedback-textarea" id="fb-text" id="fb-text" placeholder="Опишите проблему или предложение..."></textarea>
+      <div class="feedback-actions">
+        <button class="feedback-send-btn" onclick="sendFeedback()" id="fb-send-btn">Отправить</button>
+        <button class="feedback-tg-btn" onclick="openTgChat()" id="fb-tg-btn">✈️ В чат</button>
+      </div>
+    </div>
+    <div class="feedback-success" id="feedback-success">
+      <div class="feedback-success-ico">✅</div>
+      <div class="feedback-success-txt" id="fb-success-txt">Спасибо! Мы получили ваше сообщение</div>
+    </div>
   </div>
 </div>
 
@@ -355,16 +983,25 @@
         </div>
       </div>
     </div>
-
-    <!-- КНОПКА УВЕДОМЛЕНИЯ -->
-    <div class="notify-no-tg" id="notify-no-tg">
-      ℹ️ Откройте через Telegram для получения уведомлений
-    </div>
+    <div class="notify-no-tg" id="notify-no-tg">ℹ️ Откройте через Telegram для получения уведомлений</div>
     <button class="notify-btn off" id="notify-btn" onclick="toggleSubscribe()">
       <span id="notify-ico">🔔</span>
       <span id="notify-txt">Уведомить меня</span>
     </button>
-
+    <div class="complaint-sent-msg" id="complaint-sent-msg">⚠️ <span id="complaint-sent-txt">Жалоба отправлена. Спасибо!</span></div>
+    <button class="complaint-btn" id="complaint-btn" onclick="sendComplaint()">
+      <span>⚠️</span>
+      <span id="complaint-btn-txt">Статус не соответствует</span>
+    </button>
+    <div class="trust-bar-wrap" id="trust-bar-wrap">
+      <div class="trust-bar-label">
+        <span id="trust-label-txt">Рейтинг доверия</span>
+        <span id="trust-score-txt" style="color:#22c55e">100%</span>
+      </div>
+      <div class="trust-bar-track">
+        <div class="trust-bar-fill" id="trust-bar-fill" style="width:100%;background:#22c55e"></div>
+      </div>
+    </div>
     <button class="share-btn" onclick="shareStation()">
       <span style="font-size:20px">✈️</span>
       <span id="d-share-txt">Поделиться в Telegram</span>
@@ -373,10 +1010,27 @@
       <span style="font-size:20px">🗺️</span>
       <span id="d-maps-txt">Открыть в картах</span>
     </button>
+    <button onclick="openFeedbackForStation()" style="width:100%;padding:14px;border:1.5px solid #e2e8f0;border-radius:16px;background:white;color:#475569;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;transition:all 0.2s">
+      <span>💬</span><span id="d-feedback-btn-txt">Оставить отзыв о станции</span>
+    </button>
   </div>
 </div>
 
 <script>
+  function selectLang(l) {
+  lang = l;
+  document.getElementById('btn-kz').classList.toggle('selected', l === 'kz');
+  document.getElementById('btn-ru').classList.toggle('selected', l === 'ru');
+  // Далее логика перехода к выбору роли
+  const stepLang = document.getElementById('step-lang');
+  const stepRole = document.getElementById('step-role');
+  stepLang.classList.add('step-exit');
+  setTimeout(() => {
+    stepLang.style.display = 'none';
+    stepRole.style.display = 'flex';
+    stepRole.classList.add('step-enter');
+  }, 420);
+}
 const API = 'https://nonconversationally-vestibular-pia.ngrok-free.dev';
 const H = { 'ngrok-skip-browser-warning': 'true' };
 
@@ -418,11 +1072,32 @@ function highlightText(text,query){
   return text.slice(0,idx)+`<mark>${text.slice(idx,idx+query.length)}</mark>`+text.slice(idx+query.length);
 }
 
-if(navigator.geolocation){
-  navigator.geolocation.getCurrentPosition(pos=>{
-    userLat=pos.coords.latitude; userLon=pos.coords.longitude; updateCity();
-  },()=>{},{enableHighAccuracy:false,timeout:5000});
+function requestLocation(onSuccess, onError) {
+  const err = onError || (() => {});
+  if (tg && tg.LocationManager && typeof tg.LocationManager.init === 'function') {
+    try {
+      tg.LocationManager.init(() => {
+        if (tg.LocationManager.isInited && tg.LocationManager.isLocationAvailable) {
+          tg.LocationManager.getLocation((loc) => {
+            if (loc && loc.latitude) onSuccess(loc.latitude, loc.longitude);
+            else browserGeo(onSuccess, err, false);
+          });
+        } else { browserGeo(onSuccess, err, false); }
+      });
+    } catch(e) { browserGeo(onSuccess, err, false); }
+  } else { browserGeo(onSuccess, err, false); }
 }
+
+function browserGeo(onSuccess, onError, highAccuracy) {
+  if (!navigator.geolocation) { if(onError) onError(); return; }
+  navigator.geolocation.getCurrentPosition(
+    pos => onSuccess(pos.coords.latitude, pos.coords.longitude),
+    onError || (() => {}),
+    { enableHighAccuracy: !!highAccuracy, timeout: 10000, maximumAge: 30000 }
+  );
+}
+
+requestLocation((lat, lon) => { userLat = lat; userLon = lon; updateCity(); }, () => {});
 
 async function updateCity(){
   try{
@@ -433,85 +1108,99 @@ async function updateCity(){
   }catch(e){}
 }
 
-function selectLang(l){
-  lang=l;
-  document.getElementById('btn-kz').classList.toggle('selected',l==='kz');
-  document.getElementById('btn-ru').classList.toggle('selected',l==='ru');
-  document.getElementById('w-choose').textContent=t('choose');
-  document.getElementById('r-driver').textContent=t('rDriver');
-  document.getElementById('r-driver-desc').textContent=t('rDriverD');
-  document.getElementById('r-owner').textContent=t('rOwner');
-  document.getElementById('r-owner-desc').textContent=t('rOwnerD');
+function selectLang(l) {
+  lang = l;
+  document.getElementById('btn-kz').classList.toggle('selected', l === 'kz');
+  document.getElementById('btn-ru').classList.toggle('selected', l === 'ru');
+  document.getElementById('w-choose').textContent = t('choose');
+  document.getElementById('r-driver').textContent = t('rDriver');
+  document.getElementById('r-driver-desc').textContent = t('rDriverD');
+  document.getElementById('r-owner').textContent = t('rOwner');
+  document.getElementById('r-owner-desc').textContent = t('rOwnerD');
+  const stepLang = document.getElementById('step-lang');
+  const stepRole = document.getElementById('step-role');
+  if (stepRole.style.display === 'flex') return;
+  stepLang.classList.add('step-exit');
+  setTimeout(() => {
+    stepLang.style.display = 'none';
+    stepRole.style.display = 'flex';
+    stepRole.classList.add('step-enter');
+    const cards = stepRole.querySelectorAll('.role-card');
+    cards.forEach((card, i) => { setTimeout(() => card.classList.add('card-visible'), i * 80); });
+  }, 420);
+}
+
+function enterAs(role) {
+  const welcome = document.getElementById('welcome-screen');
+  const cards = document.querySelectorAll('.role-card');
+  cards.forEach(card => {
+    const isSelected = (role === 'driver' && card.classList.contains('driver')) ||
+                       (role === 'owner' && card.classList.contains('owner'));
+    if (!isSelected) {
+      card.style.transition = 'opacity 0.25s, transform 0.25s';
+      card.style.opacity = '0'; card.style.transform = 'scale(0.9)';
+    } else {
+      card.style.transition = 'transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s';
+      card.style.transform = 'scale(1.04)';
+      card.style.boxShadow = role === 'owner' ? '0 12px 40px rgba(34,197,94,0.35)' : '0 12px 40px rgba(59,130,246,0.35)';
+    }
+  });
+  setTimeout(() => {
+    welcome.classList.add('welcome-exit');
+    const app = document.getElementById('app');
+    app.style.display = 'flex'; app.style.opacity = '0'; app.style.transition = 'opacity 0.5s ease';
+    setTimeout(() => {
+      welcome.style.display = 'none';
+      requestAnimationFrame(() => { app.style.opacity = '1'; });
+      setTimeout(() => { initMap(); if (map) map.invalidateSize(); }, 100);
+    }, 500);
+  }, 300);
+  if (role === 'owner') document.getElementById('nav-owner').style.display = 'flex';
+  else document.getElementById('nav-owner').style.display = 'none';
+  applyLang(); loadStations(); startAutoUpdate(); showFeedbackFab();
+  if (sessionStorage.getItem('goto_admin') === '1') {
+    sessionStorage.removeItem('goto_admin');
+    setTimeout(() => goAdminScreen(), 600);
+  }
 }
 
 function applyLang(){
   const ids={'nav-map-txt':'map','nav-list-txt':'list','nav-owner-txt':'cabinet','leg-green':'legGreen','leg-yellow':'legYellow','leg-red':'legRed','leg-purple':'legPurple','login-title':'loginTitle','login-sub':'loginSub','lbl-phone':'phone','lbl-pass':'pass','btn-login':'login','btn-register':'register','reg-title':'regTitle','reg-sub':'regSub','tab-claim-txt':'tabClaim','tab-new-txt':'tabNew','lbl-name':'name','lbl-station':'station','btn-send':'send','btn-back':'back','dash-title':'dashTitle','dash-status-title':'curStatus','dash-update-title':'updateStatus','dash-btn-green':'btnGreen','dash-btn-yellow':'btnYellow','dash-btn-red':'btnRed','updated-txt':'updated','btn-logout':'logout'};
   Object.entries(ids).forEach(([id,k])=>{const el=document.getElementById(id);if(el)el.textContent=t(k);});
+  applyHoursLang();
   document.getElementById('search-inp').placeholder=t('searchPlaceholder');
+  applyFeedbackLang();
+  applyAdminLang();
 }
 
-function enterAs(role){
-  const welcome=document.getElementById('welcome-screen');
-  const app=document.getElementById('app');
-  welcome.style.transition='opacity 0.5s ease, transform 0.5s ease';
-  welcome.style.opacity='0'; welcome.style.transform='scale(1.08)'; welcome.style.pointerEvents='none';
-  app.style.display='flex'; app.style.opacity='0'; app.style.transition='opacity 0.4s ease';
-  setTimeout(()=>{
-    welcome.style.display='none';
-    requestAnimationFrame(()=>{ app.style.opacity='1'; });
-    setTimeout(()=>{ initMap(); if(map) map.invalidateSize(); },100);
-  },500);
-  if(role==='owner') document.getElementById('nav-owner').style.display='flex';
-  else document.getElementById('nav-owner').style.display='none';
-  applyLang(); loadStations(); startAutoUpdate();
-}
-
-// ═══ ПОДПИСКА ═══
 async function checkSubscription(stationId){
   if(!myTgId){ document.getElementById('notify-no-tg').style.display='block'; document.getElementById('notify-btn').style.display='none'; return; }
-  document.getElementById('notify-no-tg').style.display='none';
-  document.getElementById('notify-btn').style.display='flex';
+  document.getElementById('notify-no-tg').style.display='none'; document.getElementById('notify-btn').style.display='flex';
   try{
     const r=await fetch(`${API}/subscribe/check?telegram_id=${myTgId}&station_id=${stationId}`,{headers:H});
-    const d=await r.json();
-    isSubscribed=d.subscribed;
-    updateNotifyBtn();
+    const d=await r.json(); isSubscribed=d.subscribed; updateNotifyBtn();
   }catch(e){ isSubscribed=false; updateNotifyBtn(); }
 }
 
 function updateNotifyBtn(){
-  const btn=document.getElementById('notify-btn');
-  const ico=document.getElementById('notify-ico');
-  const txt=document.getElementById('notify-txt');
-  if(isSubscribed){
-    btn.className='notify-btn on';
-    ico.textContent='🔕';
-    txt.textContent=t('notifyOff');
-  } else {
-    btn.className='notify-btn off';
-    ico.textContent='🔔';
-    txt.textContent=t('notifyOn');
-  }
+  const btn=document.getElementById('notify-btn'),ico=document.getElementById('notify-ico'),txt=document.getElementById('notify-txt');
+  if(isSubscribed){ btn.className='notify-btn on'; ico.textContent='🔕'; txt.textContent=t('notifyOff'); }
+  else { btn.className='notify-btn off'; ico.textContent='🔔'; txt.textContent=t('notifyOn'); }
 }
 
 async function toggleSubscribe(){
   if(!myTgId||!currentDetailStation) return;
   try{
     const r=await fetch(`${API}/subscribe`,{method:'POST',headers:{...H,'Content-Type':'application/json'},body:JSON.stringify({telegram_id:myTgId,station_id:currentDetailStation.id})});
-    const d=await r.json();
-    isSubscribed=d.subscribed;
-    updateNotifyBtn();
+    const d=await r.json(); isSubscribed=d.subscribed; updateNotifyBtn();
   }catch(e){console.error(e);}
 }
 
-// ═══ ДЕТАЛЬНЫЙ ЭКРАН ═══
 async function openDetail(stationId){
-  const s=allStations.find(x=>x.id===stationId);
-  if(!s) return;
+  const s=allStations.find(x=>x.id===stationId); if(!s) return;
   currentDetailStation=s;
   const color=statusColors[s.status]||'#a855f7';
   const sk={green:'sGreen',yellow:'sYellow',red:'sRed',purple:'sPurple'};
-
   document.getElementById('detail-header-title').textContent=s.name;
   document.getElementById('d-ico').textContent=statusIco[s.status]||'🟣';
   document.getElementById('d-status').textContent=t(sk[s.status]||'sPurple');
@@ -523,27 +1212,33 @@ async function openDetail(stationId){
   document.getElementById('d-lbl-dist').textContent=t('distance');
   document.getElementById('d-lbl-updated').textContent=t('updatedLbl');
   document.getElementById('d-lbl-owner').textContent=t('ownerLbl');
+  document.getElementById('d-lbl-hours').textContent=lang==='kz'?'ЖҰМЫС УАҚЫТЫ':'ЧАСЫ РАБОТЫ';
+  // Часы работы
+  const hoursRow = document.getElementById('d-hours-row');
+  const hoursVal = document.getElementById('d-hours');
+  if(s.workingHours){
+    const {isOpen, label} = getOpenStatus(s.workingHours);
+    const color = isOpen ? 'var(--green)' : 'var(--red)';
+    hoursVal.innerHTML = `<span style="color:${color};font-weight:700">${label}</span>`;
+    hoursRow.style.display = 'flex';
+  } else {
+    hoursRow.style.display = 'none';
+  }
   document.getElementById('d-share-txt').textContent=t('shareTg');
   document.getElementById('d-maps-txt').textContent=t('openMaps');
-
   const hero=document.getElementById('detail-hero');
   hero.style.background=statusBg[s.status]||'rgba(168,85,247,0.12)';
   document.getElementById('d-status').style.color=color;
-
   const distRow=document.getElementById('d-dist-row');
-  if(userLat&&userLon){
-    document.getElementById('d-dist').textContent=`${calcDist(userLat,userLon,s.lat,s.lon).toFixed(1)} ${t('km')}`;
-    distRow.style.display='flex';
-  } else { distRow.style.display='none'; }
-
+  if(userLat&&userLon){ document.getElementById('d-dist').textContent=`${calcDist(userLat,userLon,s.lat,s.lon).toFixed(1)} ${t('km')}`; distRow.style.display='flex'; }
+  else { distRow.style.display='none'; }
   document.getElementById('detail-screen').classList.add('open');
+  renderComplaintBtn(s);
+  renderTrustBar(s);
   await checkSubscription(stationId);
 }
 
-function closeDetail(){
-  document.getElementById('detail-screen').classList.remove('open');
-  currentDetailStation=null;
-}
+function closeDetail(){ document.getElementById('detail-screen').classList.remove('open'); currentDetailStation=null; }
 
 function shareStation(){
   if(!currentDetailStation) return;
@@ -552,40 +1247,20 @@ function shareStation(){
   const statusTxt=t(sk[s.status]||'sPurple');
   const mapsUrl=`https://maps.google.com/maps?q=${s.lat},${s.lon}`;
   const dist=(userLat&&userLon)?`\n📏 ${calcDist(userLat,userLon,s.lat,s.lon).toFixed(1)} ${t('km')}`:'';
-  if(tg&&tg.switchInlineQuery){
-    tg.switchInlineQuery(`⛽ ${s.name}\n${statusIco[s.status]||'🟣'} ${statusTxt}${dist}`);
-  } else {
-    window.open(`https://t.me/share/url?url=${encodeURIComponent(mapsUrl)}&text=${encodeURIComponent(`⛽ ${s.name}\n${statusIco[s.status]||'🟣'} ${statusTxt}${dist}`)}`,'_blank');
-  }
+  if(tg&&tg.switchInlineQuery){ tg.switchInlineQuery(`⛽ ${s.name}\n${statusIco[s.status]||'🟣'} ${statusTxt}${dist}`); }
+  else { window.open(`https://t.me/share/url?url=${encodeURIComponent(mapsUrl)}&text=${encodeURIComponent(`⛽ ${s.name}\n${statusIco[s.status]||'🟣'} ${statusTxt}${dist}`)}`,'_blank'); }
 }
 
-function openMaps(){
-  if(!currentDetailStation) return;
-  window.open(`https://maps.google.com/maps?q=${currentDetailStation.lat},${currentDetailStation.lon}`,'_blank');
-}
+function openMaps(){ if(!currentDetailStation) return; window.open(`https://maps.google.com/maps?q=${currentDetailStation.lat},${currentDetailStation.lon}`,'_blank'); }
 
 let touchStartY=0;
 document.getElementById('detail-screen').addEventListener('touchstart',e=>touchStartY=e.touches[0].clientY);
 document.getElementById('detail-screen').addEventListener('touchend',e=>{ if(e.changedTouches[0].clientY-touchStartY>80) closeDetail(); });
 
-function onSearch(val){
-  searchQuery=val.trim();
-  document.getElementById('search-clear').classList.toggle('show',searchQuery.length>0);
-  renderList();
-}
+function onSearch(val){ searchQuery=val.trim(); document.getElementById('search-clear').classList.toggle('show',searchQuery.length>0); renderList(); }
+function clearSearch(){ searchQuery=''; document.getElementById('search-inp').value=''; document.getElementById('search-clear').classList.remove('show'); renderList(); document.getElementById('search-inp').focus(); }
 
-function clearSearch(){
-  searchQuery='';
-  document.getElementById('search-inp').value='';
-  document.getElementById('search-clear').classList.remove('show');
-  renderList();
-  document.getElementById('search-inp').focus();
-}
-
-function startAutoUpdate(){
-  if(autoUpdateInterval) clearInterval(autoUpdateInterval);
-  autoUpdateInterval=setInterval(()=>silentUpdate(),30000);
-}
+function startAutoUpdate(){ if(autoUpdateInterval) clearInterval(autoUpdateInterval); autoUpdateInterval=setInterval(()=>silentUpdate(),30000); }
 
 async function silentUpdate(){
   const ind=document.getElementById('update-indicator');
@@ -602,10 +1277,7 @@ async function silentUpdate(){
   }catch(e){setTimeout(()=>ind.classList.remove('show'),1500);}
 }
 
-function updateLastUpdatedTxt(){
-  const el=document.getElementById('list-updated-txt');
-  if(el&&lastUpdated) el.textContent=timeAgo(lastUpdated);
-}
+function updateLastUpdatedTxt(){ const el=document.getElementById('list-updated-txt'); if(el&&lastUpdated) el.textContent=timeAgo(lastUpdated); }
 setInterval(updateLastUpdatedTxt,10000);
 
 function showScreen(id,idx){
@@ -615,6 +1287,8 @@ function showScreen(id,idx){
   document.querySelectorAll('.nav-btn')[idx]?.classList.add('active');
   if(id==='map-screen'){if(!map)initMap();else setTimeout(()=>map.invalidateSize(),150);}
   if(id==='owner-screen')initOwnerScreen();
+  if(id==='admin-screen')goAdminScreen();
+  if(id==='feedback-screen')initFeedbackScreen();
 }
 
 function initMap(){
@@ -637,19 +1311,13 @@ function addUserMarker(lat,lon){
 }
 
 function locateUser(){
-  const btn=document.getElementById('locate-btn');
-  btn.classList.add('loading'); btn.textContent='⌛';
-  const onOk=(lat,lon)=>{
-    userLat=lat; userLon=lon;
-    btn.classList.remove('loading'); btn.textContent='📍';
-    map.setView([lat,lon],14);
-    addUserMarker(lat,lon);
-    renderMapMarkers(); renderList(); showNearestBanner();
-  };
-  const onErr=()=>{btn.classList.remove('loading');btn.textContent='📍';};
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(p=>onOk(p.coords.latitude,p.coords.longitude),onErr,{enableHighAccuracy:true,timeout:10000,maximumAge:0});
-  } else onErr();
+  const btn=document.getElementById("locate-btn");
+  btn.classList.add("loading"); btn.textContent="⌛";
+  const onOk=(lat,lon)=>{ userLat=lat; userLon=lon; btn.classList.remove("loading"); btn.textContent="📍"; map.setView([lat,lon],14); addUserMarker(lat,lon); renderMapMarkers(); renderList(); showNearestBanner(); };
+  const onErr=()=>{ btn.classList.remove("loading"); btn.textContent="📍"; };
+  if(tg&&tg.LocationManager&&typeof tg.LocationManager.init==='function'){
+    try{ tg.LocationManager.init(()=>{ if(tg.LocationManager.isInited&&tg.LocationManager.isLocationAvailable){ tg.LocationManager.getLocation((loc)=>{ if(loc&&loc.latitude) onOk(loc.latitude,loc.longitude); else browserGeo(onOk,onErr,true); }); } else { browserGeo(onOk,onErr,true); } }); } catch(e){ browserGeo(onOk,onErr,true); }
+  } else { browserGeo(onOk,onErr,true); }
 }
 
 function showNearestBanner(){
@@ -659,19 +1327,7 @@ function showNearestBanner(){
   const color=statusColors[nearest.status]||'#a855f7';
   const sk={green:'sGreen',yellow:'sYellow',red:'sRed',purple:'sPurple'};
   const banner=document.getElementById('nearest-banner');
-  banner.innerHTML=`
-    <div style="display:flex;align-items:center;gap:14px" onclick="openDetail(${nearest.id})">
-      <div style="width:46px;height:46px;border-radius:13px;background:${statusBg[nearest.status]||'#f3e8ff'};display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${statusIco[nearest.status]||'🟣'}</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">${t('nearest')}</div>
-        <div style="font-weight:800;font-size:15px;margin:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${nearest.name}</div>
-        <div style="font-size:12px;color:${color};font-weight:600">${t(sk[nearest.status]||'sPurple')}</div>
-      </div>
-      <div style="text-align:center;flex-shrink:0">
-        <div style="font-size:22px;font-weight:900;color:${color};line-height:1">${nearest.d.toFixed(1)}</div>
-        <div style="font-size:10px;color:#94a3b8;font-weight:600">${t('km')}</div>
-      </div>
-    </div>`;
+  banner.innerHTML=`<div style="display:flex;align-items:center;gap:14px" onclick="openDetail(${nearest.id})"><div style="width:46px;height:46px;border-radius:13px;background:${statusBg[nearest.status]||'#f3e8ff'};display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${statusIco[nearest.status]||'🟣'}</div><div style="flex:1;min-width:0"><div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">${t('nearest')}</div><div style="font-weight:800;font-size:15px;margin:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${nearest.name}</div><div style="font-size:12px;color:${color};font-weight:600">${t(sk[nearest.status]||'sPurple')}</div></div><div style="text-align:center;flex-shrink:0"><div style="font-size:22px;font-weight:900;color:${color};line-height:1">${nearest.d.toFixed(1)}</div><div style="font-size:10px;color:#94a3b8;font-weight:600">${t('km')}</div></div></div>`;
   banner.classList.add('show');
   setTimeout(()=>banner.classList.remove('show'),5000);
 }
@@ -696,10 +1352,7 @@ function renderList(){
   if(currentFilter!=='all') stations=stations.filter(s=>s.status===currentFilter);
   if(searchQuery) stations=stations.filter(s=>s.name.toLowerCase().includes(searchQuery.toLowerCase()));
   const nearestId=([...allStations].map(s=>userLat?{...s,dist:calcDist(userLat,userLon,s.lat,s.lon)}:s).sort((a,b)=>(a.dist||0)-(b.dist||0))[0])?.id;
-  if(stations.length===0){
-    document.getElementById('station-list').innerHTML=`<div class="empty-state"><div class="empty-ico">${searchQuery?'🔍':'⛽'}</div><div class="empty-txt">${t('noResults')}</div><div class="empty-sub">${t('noResultsSub')}</div></div>`;
-    return;
-  }
+  if(stations.length===0){ document.getElementById('station-list').innerHTML=`<div class="empty-state"><div class="empty-ico">${searchQuery?'🔍':'⛽'}</div><div class="empty-txt">${t('noResults')}</div><div class="empty-sub">${t('noResultsSub')}</div></div>`; return; }
   document.getElementById('station-list').innerHTML=stations.map(s=>`
     <div class="s-card ${s.id===nearestId&&userLat?'nearest':''}" onclick="openDetail(${s.id})">
       <div class="s-status-ico" style="background:${statusBg[s.status]||'rgba(168,85,247,0.12)'}">${statusIco[s.status]||'🟣'}</div>
@@ -712,40 +1365,21 @@ function renderList(){
     </div>`).join('');
 }
 
-function filterStatus(status){
-  currentFilter=status;
-  ['all','green','yellow','red'].forEach(f=>document.getElementById('f-'+f)?.classList.toggle('active',f===status));
-  renderList();
-}
-
-function initOwnerScreen(){if(token)fetchMe();else showLogin();}
-
-function showLogin(){
-  document.getElementById('login-panel').style.display='block';
-  document.getElementById('register-panel').style.display='none';
-  document.getElementById('dashboard-panel').style.display='none';
-  document.getElementById('login-error').style.display='none';
-}
+function filterStatus(status){ currentFilter=status; ['all','green','yellow','red'].forEach(f=>document.getElementById('f-'+f)?.classList.toggle('active',f===status)); renderList(); }
+function initOwnerScreen(){ if(token)fetchMe(); else showLogin(); }
+function showLogin(){ document.getElementById('login-panel').style.display='block'; document.getElementById('register-panel').style.display='none'; document.getElementById('dashboard-panel').style.display='none'; document.getElementById('login-error').style.display='none'; }
 
 function showRegister(){
-  document.getElementById('login-panel').style.display='none';
-  document.getElementById('register-panel').style.display='block';
+  document.getElementById('login-panel').style.display='none'; document.getElementById('register-panel').style.display='block';
   const sel=document.getElementById('reg-station-select');
   sel.innerHTML='<option value="">Таңдаңыз...</option>';
   allStations.filter(s=>!s.hasOwner).forEach(s=>sel.innerHTML+=`<option value="${s.id}">${s.name}</option>`);
 }
 
-function setRegTab(tab,btn){
-  regTab=tab;
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('reg-claim').style.display=tab==='claim'?'block':'none';
-  document.getElementById('reg-new').style.display=tab==='new'?'block':'none';
-}
+function setRegTab(tab,btn){ regTab=tab; document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); document.getElementById('reg-claim').style.display=tab==='claim'?'block':'none'; document.getElementById('reg-new').style.display=tab==='new'?'block':'none'; }
 
 async function doLogin(){
-  const phone=document.getElementById('inp-phone').value;
-  const password=document.getElementById('inp-password').value;
+  const phone=document.getElementById('inp-phone').value, password=document.getElementById('inp-password').value;
   try{
     const r=await fetch(`${API}/auth/login`,{method:'POST',headers:{...H,'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({username:phone,password})});
     const data=await r.json();
@@ -759,8 +1393,13 @@ async function fetchMe(){
     const r=await fetch(`${API}/auth/me`,{headers:{...H,Authorization:`Bearer ${token}`}});
     if(!r.ok){token=null;localStorage.removeItem('tg_token');showLogin();return;}
     myUser=await r.json();
-    myStation=allStations.find(s=>s.id===myUser.station_id)||null;
+    // Получаем полные данные станции с премиум полями
+    if(myUser.station_id){
+      try{ const sr=await fetch(`${API}/stations/${myUser.station_id}`,{headers:H}); myStation=await sr.json(); }
+      catch(e){ myStation=allStations.find(s=>s.id===myUser.station_id)||null; }
+    }
     showDashboard();
+    // Показываем вкладку Админ если роль admin
   }catch(e){showLogin();}
 }
 
@@ -776,6 +1415,8 @@ function showDashboard(){
     document.getElementById('my-status-text').textContent=statusIco[myStation.status]+' '+t(sk[myStation.status]||'sPurple');
     document.getElementById('status-pill').style.background=statusBg[myStation.status]||'rgba(168,85,247,0.12)';
     document.getElementById('my-last-updated').textContent='🕐 '+(myStation.lastUpdated?.slice(0,16).replace('T',' ')||'');
+    showPremium(myStation);
+    initHours(myStation);
   }
 }
 
@@ -790,8 +1431,7 @@ async function setMyStatus(status){
       document.getElementById('my-status-dot').style.background=color;
       document.getElementById('my-status-text').textContent=statusIco[status]+' '+t(sk[status]);
       document.getElementById('status-pill').style.background=statusBg[status];
-      const msg=document.getElementById('update-success');
-      msg.style.display='block';
+      const msg=document.getElementById('update-success'); msg.style.display='block';
       setTimeout(()=>msg.style.display='none',2500);
       loadStations();
     }
@@ -799,11 +1439,8 @@ async function setMyStatus(status){
 }
 
 async function doRegister(){
-  const name=document.getElementById('reg-name').value;
-  const phone=document.getElementById('reg-phone').value;
-  const password=document.getElementById('reg-password').value;
-  const errEl=document.getElementById('reg-error');
-  const sucEl=document.getElementById('reg-success');
+  const name=document.getElementById('reg-name').value, phone=document.getElementById('reg-phone').value, password=document.getElementById('reg-password').value;
+  const errEl=document.getElementById('reg-error'), sucEl=document.getElementById('reg-success');
   errEl.style.display='none';
   if(regTab==='claim'){
     const stationId=parseInt(document.getElementById('reg-station-select').value);
@@ -818,17 +1455,1093 @@ async function doRegister(){
   }else{errEl.style.display='block';errEl.textContent='Барлық өрістерді толтырыңыз';}
 }
 
-function doLogout(){token=null;localStorage.removeItem('tg_token');myUser=null;myStation=null;showLogin();}
+function doLogout(){ token=null; localStorage.removeItem('tg_token'); myUser=null; myStation=null; document.getElementById('premium-wrap').style.display='none'; showLogin(); }
 
 async function loadStations(){
   try{
     const r=await fetch(`${API}/stations`,{headers:H});
-    allStations=await r.json();
-    lastUpdated=new Date(); updateLastUpdatedTxt();
+    allStations=await r.json(); lastUpdated=new Date(); updateLastUpdatedTxt();
     renderList();
     if(map){renderMapMarkers();if(userLat)showNearestBanner();}
   }catch(e){console.error(e);}
 }
+
+// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════
+// ЧАСЫ РАБОТЫ
+// ═══════════════════════════════════════════
+
+const DAY_KEYS = ['mon','tue','wed','thu','fri','sat','sun'];
+const DAY_NAMES_KZ = ['Дс','Сс','Ср','Бс','Жм','Сб','Жк'];
+const DAY_NAMES_RU = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+
+// Дефолт: пн-пт 8:00-20:00, сб-вс 9:00-18:00
+const DEFAULT_HOURS = {
+  mon:{open:true,from:'08:00',to:'20:00'},
+  tue:{open:true,from:'08:00',to:'20:00'},
+  wed:{open:true,from:'08:00',to:'20:00'},
+  thu:{open:true,from:'08:00',to:'20:00'},
+  fri:{open:true,from:'08:00',to:'20:00'},
+  sat:{open:true,from:'09:00',to:'18:00'},
+  sun:{open:true,from:'09:00',to:'18:00'},
+  is24h: false
+};
+
+let stationHours = null;
+
+function initHours(station) {
+  stationHours = station.workingHours ? JSON.parse(JSON.stringify(station.workingHours)) : JSON.parse(JSON.stringify(DEFAULT_HOURS));
+  renderHoursGrid();
+  updateHoursBadge();
+}
+
+function renderHoursGrid() {
+  const kz = lang === 'kz';
+  const names = kz ? DAY_NAMES_KZ : DAY_NAMES_RU;
+  const is24 = stationHours?.is24h;
+
+  // Обновляем тоггл 24ч
+  const tog = document.getElementById('toggle-24h');
+  if (tog) tog.checked = !!is24;
+
+  const grid = document.getElementById('days-grid-wrap');
+  if (!grid) return;
+
+  if (is24) {
+    grid.innerHTML = `<div style="text-align:center;padding:12px;color:var(--green);font-weight:700;font-size:14px">🕐 ${kz ? 'Тәулік бойы жұмыс істейді' : 'Работает круглосуточно'}</div>`;
+    return;
+  }
+
+  grid.innerHTML = DAY_KEYS.map((day, i) => {
+    const d = stationHours[day] || {open:false,from:'09:00',to:'18:00'};
+    return `<div class="day-row">
+      <span class="day-name">${names[i]}</span>
+      <label class="day-toggle">
+        <input type="checkbox" ${d.open ? 'checked' : ''} onchange="toggleDay('${day}', this.checked)"/>
+        <span class="day-slider"></span>
+      </label>
+      ${d.open
+        ? `<div class="day-times">
+             <input class="time-input" type="time" value="${d.from}" onchange="setTime('${day}','from',this.value)"/>
+             <span class="time-sep">—</span>
+             <input class="time-input" type="time" value="${d.to}" onchange="setTime('${day}','to',this.value)"/>
+           </div>`
+        : `<span class="day-closed">${kz ? 'Жабық' : 'Закрыто'}</span>`
+      }
+    </div>`;
+  }).join('');
+}
+
+function toggle24h(checked) {
+  stationHours.is24h = checked;
+  renderHoursGrid();
+}
+
+function toggleDay(day, open) {
+  if (!stationHours[day]) stationHours[day] = {open:false,from:'09:00',to:'18:00'};
+  stationHours[day].open = open;
+  renderHoursGrid();
+}
+
+function setTime(day, field, value) {
+  if (!stationHours[day]) stationHours[day] = {open:true,from:'09:00',to:'18:00'};
+  stationHours[day][field] = value;
+}
+
+function updateHoursBadge() {
+  const badge = document.getElementById('hours-open-badge');
+  if (!badge || !stationHours) return;
+  const {isOpen, label} = getOpenStatus(stationHours);
+  badge.style.display = 'block';
+  badge.innerHTML = `<div class="hours-open-now ${isOpen?'open':'closed'}">${isOpen ? '🟢' : '🔴'} ${label}</div>`;
+}
+
+function getOpenStatus(hours) {
+  const kz = lang === 'kz';
+  if (hours.is24h) return {isOpen:true, label: kz?'Тәулік бойы':'Круглосуточно'};
+
+  const now = new Date();
+  const dayIdx = (now.getDay() + 6) % 7; // 0=пн
+  const day = DAY_KEYS[dayIdx];
+  const d = hours[day];
+
+  if (!d || !d.open) return {isOpen:false, label: kz?'Бүгін жабық':'Сегодня закрыто'};
+
+  const [fh, fm] = d.from.split(':').map(Number);
+  const [th, tm] = d.to.split(':').map(Number);
+  const nowMin = now.getHours()*60 + now.getMinutes();
+  const fromMin = fh*60+fm, toMin = th*60+tm;
+
+  if (nowMin >= fromMin && nowMin < toMin) {
+    return {isOpen:true, label: `${kz?'Ашық':'Открыто'} · ${kz?'дейін':'до'} ${d.to}`};
+  }
+  if (nowMin < fromMin) {
+    return {isOpen:false, label: `${kz?'Ашылады':'Откроется'} ${d.from}`};
+  }
+  return {isOpen:false, label: kz?'Жабылды':'Закрыто'};
+}
+
+async function saveHours() {
+  if (!myStation) return;
+  const btn = document.getElementById('hours-save-btn');
+  btn.disabled = true;
+  try {
+    const r = await fetch(`${API}/stations/${myStation.id}/hours`, {
+      method: 'POST',
+      headers: {...H, 'Content-Type':'application/json', Authorization:`Bearer ${token}`},
+      body: JSON.stringify({working_hours: stationHours})
+    });
+    if (r.ok) {
+      myStation.workingHours = JSON.parse(JSON.stringify(stationHours));
+      btn.textContent = lang==='kz' ? '✅ Сақталды' : '✅ Сохранено';
+      setTimeout(() => {
+        btn.textContent = lang==='kz' ? 'Сақтау' : 'Сохранить';
+        btn.disabled = false;
+      }, 2000);
+      updateHoursBadge();
+    }
+  } catch(e) { btn.disabled = false; }
+}
+
+function applyHoursLang() {
+  const kz = lang === 'kz';
+  const s = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+  s('hours-title-lbl', kz ? '⏰ ЖҰМЫС УАҚЫТЫ' : '⏰ ЧАСЫ РАБОТЫ');
+  s('hours-24-lbl',    kz ? 'Тәулік бойы'     : 'Круглосуточно');
+  s('hours-save-btn',  kz ? 'Сақтау'           : 'Сохранить');
+  renderHoursGrid();
+  updateHoursBadge();
+}
+// ПРЕМИУМ ФУНКЦИИ
+// ═══════════════════════════════════════════
+
+let activeServices = [];
+
+function showPremium(station) {
+  const wrap = document.getElementById('premium-wrap');
+  if(!wrap) return;
+  wrap.style.display = 'block';
+  initServices(station.services||[]);
+  const slider = document.getElementById('queue-slider');
+  if(slider){ slider.value = station.queueLevel||0; onQueueSlide(station.queueLevel||0); }
+  initReminder(station.reminderMin||120);
+  renderPhotos(station.photos||[]);
+  loadTrusted();
+  // Инициализация цены газа
+  const priceInput = document.getElementById('gas-price-input');
+  if (priceInput) {
+    if (station.gasPrice !== undefined && station.gasPrice !== null) {
+      priceInput.value = station.gasPrice;
+    } else {
+      priceInput.value = ''; // Пустое поле если цена не задана
+    }
+  }
+  // Переводим тексты
+  const kz = lang==='kz';
+  const s=(id,txt)=>{const e=document.getElementById(id);if(e)e.textContent=txt;};
+  s('ph-title',   kz?'✨ Премиум мүмкіндіктер':'✨ Премиум');
+  s('pt-svc',     kz?'Қосымша қызметтер':'Доп услуги');
+  s('pt-queue',   kz?'Кезектің қарқындылығы':'Интенсивность очереди');
+  s('pt-price',       kz ? 'Газ бағасы' : 'Стоимость газа');
+  s('price-label',    kz ? 'литріне' : 'за литр');
+  s('price-hint-txt', kz ? 'Литр үшін ағымдағы бағаны көрсетіңіз' : 'Укажите текущую цену за литр газа');
+  s('pt-remind',  kz?'Жаңарту еске салғышы':'Напоминание об обновлении');
+  s('pt-photo',   kz?'Станция фотолары':'Фотографии станции');
+  s('pt-trusted', kz?'Сенімді пайдаланушылар':'Доверенные пользователи');
+  s('ql-free',    kz?'Бос':'Свободно');
+  s('ql-mid',     kz?'Орташа':'Умеренно');
+  s('ql-busy',    kz?'Кезек':'Очередь');
+  s('s-wash',     kz?'Автожуу':'Автомойка');
+  s('s-air',      kz?'Айдау':'Подкачка');
+  s('s-shop',     kz?'Дүкен':'Магазин');
+  s('s-cafe',     kz?'Кафе':'Кафе');
+  s('s-tire',     kz?'Дөңгелек':'Шиномонтаж');
+  s('s-vacuum',   kz?'Шаңсорғыш':'Пылесос');
+  s('btn-tr-add', kz?'+ Қосу':'+ Добавить');
+}
+
+function initServices(services) {
+  activeServices = [...(services||[])];
+  document.querySelectorAll('.svc-btn').forEach(btn => {
+    btn.classList.toggle('active', activeServices.includes(btn.dataset.svc));
+  });
+}
+
+async function toggleSvc(svc, btn) {
+  if(!myStation) return;
+  btn.classList.toggle('active');
+  activeServices = activeServices.includes(svc) ? activeServices.filter(s=>s!==svc) : [...activeServices, svc];
+  try {
+    await fetch(`${API}/stations/${myStation.id}/services`, {
+      method:'POST', headers:{...H,'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+      body: JSON.stringify({services: activeServices})
+    });
+  } catch(e) { console.error(e); }
+}
+
+function onQueueSlide(val) {
+  val = parseInt(val);
+  const el = document.getElementById('queue-val'); if(!el) return;
+  const kz = lang==='kz';
+  if(val===0)      el.textContent = kz?'😊 Кезек жоқ':'😊 Очереди нет';
+  else if(val<=25) el.textContent = kz?'🟢 Аз кезек':'🟢 Небольшая';
+  else if(val<=50) el.textContent = kz?'🟡 Орташа':'🟡 Умеренная';
+  else if(val<=75) el.textContent = kz?'🟠 Ұзын':'🟠 Длинная';
+  else             el.textContent = kz?'🔴 Өте ұзын':'🔴 Очень длинная';
+}
+
+let queueTimer=null;
+async function saveQueue(val) {
+  if(!myStation) return;
+  clearTimeout(queueTimer);
+  queueTimer = setTimeout(async () => {
+    try {
+      await fetch(`${API}/stations/${myStation.id}/queue`, {
+        method:'POST', headers:{...H,'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body: JSON.stringify({queue_level: parseInt(val)})
+      });
+    } catch(e) { console.error(e); }
+  }, 600);
+}
+// ═══════════════════════════════════════════════════════════════
+// ЦЕНА ГАЗА
+// ═══════════════════════════════════════════════════════════════
+
+let gasPriceTimer = null;
+function onGasPriceChange(value) {
+  const price = parseFloat(value);
+  if (isNaN(price) || price < 0) return;
+  
+  clearTimeout(gasPriceTimer);
+  gasPriceTimer = setTimeout(async () => {
+    if (!myStation) return;
+    try {
+      const response = await fetch(`${API}/stations/${myStation.id}/price`, {
+        method: 'POST',
+        headers: {
+          ...H,
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ gas_price: price })
+      });
+      
+      if (response.ok) {
+        console.log('✅ Цена газа сохранена:', price, '₸');
+        myStation.gasPrice = price;
+      } else {
+        console.error('❌ Ошибка сохранения цены');
+      }
+    } catch (e) {
+      console.error('❌ Ошибка:', e);
+    }
+  }, 1000); // Сохраняем через 1 секунду после ввода
+}
+function initReminder(min) {
+  document.querySelectorAll('.remind-chip').forEach(c=>c.classList.remove('active'));
+  const el = document.getElementById('rc'+min); if(el) el.classList.add('active');
+}
+
+async function pickRemind(min, el) {
+  if(!myStation) return;
+  document.querySelectorAll('.remind-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  try {
+    await fetch(`${API}/stations/${myStation.id}/reminder`, {
+      method:'POST', headers:{...H,'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+      body: JSON.stringify({reminder_min: min})
+    });
+  } catch(e) { console.error(e); }
+}
+
+function renderPhotos(photos) {
+  const grid = document.getElementById('photos-grid'); if(!grid) return;
+  let out = (photos||[]).map(url=>`
+    <div class="photo-slot">
+      <img src="${API}${url}" onerror="this.parentElement.style.background='#f1f5f9'"/>
+      <button class="photo-del" onclick="delPhoto('${url}')">✕</button>
+    </div>`).join('');
+  if((photos||[]).length<5)
+    out+=`<div class="photo-slot" onclick="document.getElementById('photo-file').click()"><span class="photo-add-ico">＋</span></div>`;
+  grid.innerHTML = out;
+}
+
+async function uploadPhoto(e) {
+  if(!myStation) return;
+  const file=e.target.files[0]; if(!file) return;
+  const fd=new FormData(); fd.append('file',file);
+  try {
+    const r=await fetch(`${API}/stations/${myStation.id}/photos`,{method:'POST',headers:{...H,Authorization:`Bearer ${token}`},body:fd});
+    const d=await r.json(); if(r.ok) renderPhotos(d.photos);
+  } catch(e) { console.error(e); }
+  e.target.value='';
+}
+
+async function delPhoto(url) {
+  if(!myStation) return;
+  try {
+    const r=await fetch(`${API}/stations/${myStation.id}/photos?url=${encodeURIComponent(url)}`,{method:'DELETE',headers:{...H,Authorization:`Bearer ${token}`}});
+    const d=await r.json(); if(r.ok) renderPhotos(d.photos);
+  } catch(e) { console.error(e); }
+}
+
+let trustedUsers=[];
+
+async function loadTrusted() {
+  if(!myStation) return;
+  try {
+    const r=await fetch(`${API}/stations/${myStation.id}/trusted`,{headers:{...H,Authorization:`Bearer ${token}`}});
+    trustedUsers=await r.json(); renderTrusted();
+  } catch(e) { console.error(e); }
+}
+
+function renderTrusted() {
+  const list=document.getElementById('trusted-list'), form=document.getElementById('trusted-add-form'), cnt=document.getElementById('trusted-cnt');
+  if(!list) return;
+  if(cnt) cnt.textContent=`(${trustedUsers.length}/3)`;
+  list.innerHTML=trustedUsers.map(u=>`
+    <div class="trusted-item">
+      <div class="trusted-ava">${(u.name[0]||'?').toUpperCase()}</div>
+      <div class="trusted-info">
+        <div class="trusted-name-txt">${u.name}</div>
+        <div class="trusted-tg-txt">ID: ${u.telegram_id}</div>
+      </div>
+      <button class="trusted-del" onclick="removeTrusted(${u.id})">🗑️</button>
+    </div>`).join('');
+  if(form) form.style.display=trustedUsers.length>=3?'none':'flex';
+}
+
+async function addTrusted() {
+  if(!myStation) return;
+  const tgId=document.getElementById('tr-tgid').value.trim(), name=document.getElementById('tr-name').value.trim();
+  if(!tgId||!name) return;
+  try {
+    const r=await fetch(`${API}/stations/${myStation.id}/trusted`,{method:'POST',headers:{...H,'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({telegram_id:tgId,name})});
+    if(r.ok){ document.getElementById('tr-tgid').value=''; document.getElementById('tr-name').value=''; await loadTrusted(); }
+    else { const d=await r.json(); alert(d.detail||'Ошибка'); }
+  } catch(e) { console.error(e); }
+}
+
+async function removeTrusted(id) {
+  if(!myStation) return;
+  try {
+    await fetch(`${API}/stations/${myStation.id}/trusted/${id}`,{method:'DELETE',headers:{...H,Authorization:`Bearer ${token}`}});
+    await loadTrusted();
+  } catch(e) { console.error(e); }
+}
+
+// ═══════════════════════════════════════════
+// ЖАЛОБЫ И РЕЙТИНГ ДОВЕРИЯ
+// ═══════════════════════════════════════════
+
+// 1 жалоба в 24 часа на станцию — храним timestamp
+function getComplaintKey(stationId) {
+  return `complaint_ts_${stationId}`;
+}
+
+function hasComplained(stationId) {
+  try {
+    const ts = parseInt(localStorage.getItem(getComplaintKey(stationId)) || '0');
+    if(!ts) return false;
+    return (Date.now() - ts) < 24 * 60 * 60 * 1000; // 24 часа
+  } catch(e) { return false; }
+}
+
+function markComplained(stationId) {
+  try { localStorage.setItem(getComplaintKey(stationId), String(Date.now())); } catch(e) {}
+}
+
+function hoursUntilCanComplain(stationId) {
+  try {
+    const ts = parseInt(localStorage.getItem(getComplaintKey(stationId)) || '0');
+    if(!ts) return 0;
+    const diff = 24 * 60 * 60 * 1000 - (Date.now() - ts);
+    return Math.max(0, Math.ceil(diff / 3600000));
+  } catch(e) { return 0; }
+}
+
+function getTrustColor(pct) {
+  if(pct >= 70) return '#22c55e';
+  if(pct >= 40) return '#eab308';
+  return '#ef4444';
+}
+
+function renderTrustBar(station) {
+  const complaints = station.complaintCount || 0;
+  const threshold = station.complaintThreshold || 5;
+  // Рейтинг: 100% если 0 жалоб, 0% если >= threshold
+  const pct = Math.max(0, Math.round((1 - complaints / threshold) * 100));
+  const color = getTrustColor(pct);
+
+  const fill = document.getElementById('trust-bar-fill');
+  const score = document.getElementById('trust-score-txt');
+  const label = document.getElementById('trust-label-txt');
+  if(fill)  { fill.style.width = pct + '%'; fill.style.background = color; }
+  if(score) { score.textContent = pct + '%'; score.style.color = color; }
+  if(label) { label.textContent = lang === 'kz' ? 'Сенімділік рейтингі' : 'Рейтинг доверия'; }
+
+  // Показываем жалобы под шкалой если есть
+  const wrap = document.getElementById('trust-bar-wrap');
+  if(wrap && complaints > 0) {
+    const existing = document.getElementById('complaint-count-note');
+    const note = existing || document.createElement('div');
+    note.id = 'complaint-count-note';
+    note.style.cssText = 'font-size:11px;color:#94a3b8;margin-top:4px;text-align:center;';
+    const word = lang === 'kz' ? 'шағым' : 'жалоб';
+    note.textContent = `⚠️ ${complaints} ${word} из ${threshold}`;
+    if(!existing) wrap.appendChild(note);
+    else existing.textContent = note.textContent;
+  }
+}
+
+function renderComplaintBtn(station) {
+  const btn = document.getElementById('complaint-btn');
+  const msg = document.getElementById('complaint-sent-msg');
+  if(!btn) return;
+  const kz = lang === 'kz';
+  if(msg) msg.style.display = 'none';
+
+  if(hasComplained(station.id)) {
+    const h = hoursUntilCanComplain(station.id);
+    const label = kz
+      ? `✓ Шағым жіберілді (${h} сағ)`
+      : `✓ Жалоба отправлена (ещё ${h} ч)`;
+    btn.className = 'complaint-btn done';
+    btn.innerHTML = `<span>${label}</span>`;
+  } else {
+    btn.className = 'complaint-btn';
+    btn.innerHTML = `<span>⚠️</span><span>${kz ? 'Статус сәйкес келмейді' : 'Статус не соответствует'}</span>`;
+  }
+}
+
+async function sendComplaint() {
+  if(!currentDetailStation) return;
+  if(hasComplained(currentDetailStation.id)) return;
+
+  const btn = document.getElementById('complaint-btn');
+  const msg = document.getElementById('complaint-sent-msg');
+  const kz = lang === 'kz';
+
+  btn.disabled = true;
+  try {
+    const r = await fetch(`${API}/stations/${currentDetailStation.id}/complaint`, {
+      method: 'POST',
+      headers: { ...H, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_id: myTgId ? String(myTgId) : null })
+    });
+    const d = await r.json();
+    if(r.ok) {
+      markComplained(currentDetailStation.id);
+      currentDetailStation.complaintCount = d.complaint_count;
+      // Если статус стал фиолетовым
+      if(d.status_changed) {
+        currentDetailStation.status = 'purple';
+        const idx = allStations.findIndex(s => s.id === currentDetailStation.id);
+        if(idx >= 0) { allStations[idx].status = 'purple'; renderList(); if(map) renderMapMarkers(); }
+        document.getElementById('d-status').textContent = t('sPurple');
+        document.getElementById('d-status').style.color = statusColors['purple'];
+        document.getElementById('d-ico').textContent = '🟣';
+        document.getElementById('detail-hero').style.background = statusBg['purple'];
+      }
+      renderComplaintBtn(currentDetailStation);
+      renderTrustBar(currentDetailStation);
+      if(msg) {
+        msg.textContent = kz ? '⚠️ Шағым жіберілді. Рахмет!' : '⚠️ Жалоба отправлена. Спасибо!';
+        msg.style.display = 'block';
+        setTimeout(() => { if(msg) msg.style.display = 'none'; }, 3000);
+      }
+    } else if(r.status === 400) {
+      const d2 = await r.json();
+      if(msg) {
+        msg.textContent = '⏳ ' + (d2.detail || (kz ? 'Кейінірек қайталаңыз' : 'Попробуйте позже'));
+        msg.style.display = 'block';
+        setTimeout(() => { if(msg) msg.style.display = 'none'; }, 3000);
+      }
+    }
+  } catch(e) { console.error(e); }
+  btn.disabled = false;
+}
+
+
+// ═══════════════════════════════════════════
+// ADMIN LOGIN / LOGOUT
+// ═══════════════════════════════════════════
+
+let adminAuthed = false;
+
+// Easter egg: 7 тапов по логотипу = вход в админку
+let logoTapCount = 0, logoTapTimer = null;
+function handleLogoTap() {
+  logoTapCount++;
+  clearTimeout(logoTapTimer);
+  if (logoTapCount >= 7) {
+    logoTapCount = 0;
+    // Небольшая вибрация если поддерживается
+    if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+    // Переходим на админ экран (после enterAs)
+    if (document.getElementById('app').style.display !== 'none') {
+      goAdminScreen();
+    } else {
+      // Запоминаем — после входа перейти на админку
+      sessionStorage.setItem('goto_admin', '1');
+    }
+  }
+  logoTapTimer = setTimeout(() => logoTapCount = 0, 1500);
+}
+
+// Список Telegram ID у которых автоматический доступ к админке
+// Замените на ваш реальный Telegram ID
+const ADMIN_TG_IDS = [/* 123456789 */];
+
+function goAdminScreen() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('admin-screen').classList.add('active');
+
+  // Автовход если tgId в белом списке
+  if (!adminAuthed && myTgId && ADMIN_TG_IDS.includes(myTgId)) {
+    autoAdminLoginByTgId();
+    return;
+  }
+
+  document.getElementById('admin-login-panel').style.display   = adminAuthed ? 'none'  : 'block';
+  document.getElementById('admin-content-panel').style.display = adminAuthed ? 'block' : 'none';
+  document.getElementById('adm-login-error').style.display = 'none';
+  document.getElementById('adm-password').value = '';
+  applyAdminLang();
+}
+
+async function autoAdminLoginByTgId() {
+  // Автоматический вход по tgId — запрашиваем токен через специальный эндпоинт
+  try {
+    const r = await fetch(`${API}/admin/tg-auth`, {
+      method: 'POST',
+      headers: {...H, 'Content-Type': 'application/json'},
+      body: JSON.stringify({ telegram_id: String(myTgId) })
+    });
+    const d = await r.json();
+    if (r.ok) {
+      token = d.access_token;
+      localStorage.setItem('tg_token', token);
+      const me = await fetch(`${API}/auth/me`, {headers:{...H, Authorization:`Bearer ${token}`}});
+      myUser = await me.json();
+      adminAuthed = true;
+      document.getElementById('admin-login-panel').style.display   = 'none';
+      document.getElementById('admin-content-panel').style.display = 'block';
+      applyAdminLang();
+      initAdminScreen();
+    } else {
+      // Фоллбэк на обычный вход
+      document.getElementById('admin-login-panel').style.display   = 'block';
+      document.getElementById('admin-content-panel').style.display = 'none';
+      applyAdminLang();
+    }
+  } catch(e) {
+    document.getElementById('admin-login-panel').style.display = 'block';
+    document.getElementById('admin-content-panel').style.display = 'none';
+    applyAdminLang();
+  }
+}
+
+async function doAdminLogin() {
+  const pw = document.getElementById('adm-password').value.trim();
+  if(!pw) return;
+  const errEl = document.getElementById('adm-login-error');
+  errEl.style.display = 'none';
+  try {
+    // Авторизуемся через стандартный эндпоинт — логин admin, пароль из поля
+    const r = await fetch(`${API}/auth/login`, {
+      method: 'POST',
+      headers: {...H, 'Content-Type': 'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({username: 'admin', password: pw})
+    });
+    const d = await r.json();
+    if(r.ok) {
+      token = d.access_token;
+      localStorage.setItem('tg_token', token);
+      // Проверяем что это реально admin
+      const me = await fetch(`${API}/auth/me`, {headers:{...H, Authorization:`Bearer ${token}`}});
+      const user = await me.json();
+      if(user.role !== 'admin') {
+        token = null; localStorage.removeItem('tg_token');
+        errEl.style.display = 'block';
+        errEl.textContent = lang === 'kz' ? 'Бұл аккаунт әкімші емес' : 'Этот аккаунт не является администратором';
+        return;
+      }
+      myUser = user;
+      adminAuthed = true;
+      document.getElementById('admin-login-panel').style.display  = 'none';
+      document.getElementById('admin-content-panel').style.display = 'block';
+      initAdminScreen();
+    } else {
+      errEl.style.display = 'block';
+      errEl.textContent = lang === 'kz' ? 'Қате пароль' : 'Неверный пароль';
+    }
+  } catch(e) {
+    errEl.style.display = 'block';
+    errEl.textContent = lang === 'kz' ? 'Қосылу қатесі' : 'Ошибка подключения';
+  }
+}
+
+function doAdminLogout() {
+  adminAuthed = false;
+  token = null;
+  localStorage.removeItem('tg_token');
+  myUser = null;
+  showScreen('map-screen', 0);
+}
+
+// ═══════════════════════════════════════════
+// АДМИН ПАНЕЛЬ
+// ═══════════════════════════════════════════
+
+async function initAdminScreen() {
+  if(!adminAuthed) return;
+  applyAdminLang();
+  await Promise.all([loadAdmStats(), loadAdmUsers(), loadAdmStations(), loadAdmComplaints(), loadAdmFeedback(), loadAdmSettings()]);
+}
+
+// — Статистика —
+async function loadAdmStats() {
+  try {
+    const [stR, usR, cpR] = await Promise.all([
+      fetch(`${API}/stations`, {headers:H}),
+      fetch(`${API}/admin/users`, {headers:{...H, Authorization:`Bearer ${token}`}}),
+      fetch(`${API}/admin/complaints`, {headers:{...H, Authorization:`Bearer ${token}`}})
+    ]);
+    const stations = await stR.json();
+    const users    = await usR.json();
+    const complaints = await cpR.json();
+    const pending  = users.filter(u => !u.is_approved && u.role !== 'admin').length;
+    const owners   = users.filter(u => u.is_approved && u.role === 'owner').length;
+    const totalComplaints = complaints.reduce((s,c) => s + c.complaint_count, 0);
+
+    const s = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
+    s('adm-stat-stations',  stations.length);
+    s('adm-stat-owners',    owners);
+    s('adm-stat-pending',   pending);
+    s('adm-stat-complaints',totalComplaints);
+    s('adm-badge-users',    pending);
+    s('adm-badge-stations', stations.length);
+    s('adm-badge-complaints', complaints.length);
+  } catch(e) { console.error(e); }
+}
+
+// — Заявки пользователей —
+async function loadAdmUsers() {
+  const list = document.getElementById('adm-users-list');
+  if(!list) return;
+  try {
+    const r = await fetch(`${API}/admin/users`, {headers:{...H, Authorization:`Bearer ${token}`}});
+    const users = await r.json();
+    const pending = users.filter(u => !u.is_approved && u.role !== 'admin');
+    const approved = users.filter(u => u.is_approved && u.role === 'owner');
+
+    if(users.length === 0) { list.innerHTML = `<div class="empty-admin">Нет заявок</div>`; return; }
+
+    let html = '';
+    if(pending.length > 0) {
+      html += `<div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">⏳ Ожидают одобрения</div>`;
+      html += pending.map(u => `
+        <div class="req-item" id="req-${u.id}">
+          <div class="req-ava">${(u.name||'?')[0].toUpperCase()}</div>
+          <div class="req-info">
+            <div class="req-name">${u.name}</div>
+            <div class="req-meta">${u.phone} · Станция #${u.station_id||'—'}</div>
+          </div>
+          <div class="req-actions">
+            <button class="btn-approve" onclick="admApprove(${u.id})">✓</button>
+            <button class="btn-reject"  onclick="admReject(${u.id})">✕</button>
+          </div>
+        </div>`).join('');
+    }
+    if(approved.length > 0) {
+      html += `<div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:12px 0 8px">✅ Одобренные</div>`;
+      html += approved.map(u => `
+        <div class="req-item">
+          <div class="req-ava" style="background:linear-gradient(135deg,#22c55e,#16a34a)">${(u.name||'?')[0].toUpperCase()}</div>
+          <div class="req-info">
+            <div class="req-name">${u.name}</div>
+            <div class="req-meta">${u.phone} · Станция #${u.station_id||'—'}</div>
+          </div>
+          <span class="admin-badge badge-green">✓</span>
+        </div>`).join('');
+    }
+    list.innerHTML = html;
+  } catch(e) { list.innerHTML = `<div class="empty-admin">Ошибка загрузки</div>`; }
+}
+
+async function admApprove(userId) {
+  try {
+    const r = await fetch(`${API}/admin/users/${userId}/approve`, {method:'POST', headers:{...H, Authorization:`Bearer ${token}`}});
+    if(r.ok) { await loadAdmUsers(); await loadAdmStats(); }
+  } catch(e) { console.error(e); }
+}
+
+async function admReject(userId) {
+  if(!confirm('Отклонить заявку?')) return;
+  try {
+    const r = await fetch(`${API}/admin/users/${userId}`, {method:'DELETE', headers:{...H, Authorization:`Bearer ${token}`}});
+    if(r.ok) { await loadAdmUsers(); await loadAdmStats(); }
+  } catch(e) { console.error(e); }
+}
+
+// — Станции —
+async function loadAdmStations() {
+  const list = document.getElementById('adm-stations-list');
+  if(!list) return;
+  try {
+    const r = await fetch(`${API}/stations`, {headers:H});
+    const stations = await r.json();
+    if(stations.length === 0) { list.innerHTML = `<div class="empty-admin">Нет станций</div>`; return; }
+    list.innerHTML = stations.map(s => `
+      <div class="station-admin-item">
+        <div class="station-admin-dot" style="background:${statusColors[s.status]||'#a855f7'}"></div>
+        <div class="station-admin-info">
+          <div class="station-admin-name">${s.name}</div>
+          <div class="station-admin-meta">${s.lat?.toFixed(4)}, ${s.lon?.toFixed(4)} · ${s.hasOwner ? '👤 Есть владелец' : '👻 Без владельца'}</div>
+        </div>
+        <button class="btn-sm-gray" onclick="admDeleteStation(${s.id}, '${s.name.replace(/'/g,'\'')}')">🗑️</button>
+      </div>`).join('');
+  } catch(e) { list.innerHTML = `<div class="empty-admin">Ошибка</div>`; }
+}
+
+async function adminAddStation() {
+  const name = document.getElementById('adm-st-name').value.trim();
+  const lat  = parseFloat(document.getElementById('adm-st-lat').value);
+  const lon  = parseFloat(document.getElementById('adm-st-lon').value);
+  if(!name || isNaN(lat) || isNaN(lon)) { alert('Заполните все поля'); return; }
+  try {
+    const r = await fetch(`${API}/admin/stations`, {
+      method:'POST', headers:{...H,'Content-Type':'application/json', Authorization:`Bearer ${token}`},
+      body: JSON.stringify({name, lat, lon})
+    });
+    if(r.ok) {
+      document.getElementById('adm-st-name').value = '';
+      document.getElementById('adm-st-lat').value  = '';
+      document.getElementById('adm-st-lon').value  = '';
+      await loadAdmStations(); await loadAdmStats(); await loadStations();
+    }
+  } catch(e) { console.error(e); }
+}
+
+async function admDeleteStation(id, name) {
+  if(!confirm(`Удалить станцию "${name}"?`)) return;
+  try {
+    const r = await fetch(`${API}/admin/stations/${id}`, {method:'DELETE', headers:{...H, Authorization:`Bearer ${token}`}});
+    if(r.ok) { await loadAdmStations(); await loadAdmStats(); await loadStations(); }
+  } catch(e) { console.error(e); }
+}
+
+// — Жалобы —
+async function loadAdmComplaints() {
+  const list = document.getElementById('adm-complaints-list');
+  if(!list) return;
+  try {
+    const r = await fetch(`${API}/admin/complaints`, {headers:{...H, Authorization:`Bearer ${token}`}});
+    const complaints = await r.json();
+    if(complaints.length === 0) { list.innerHTML = `<div class="empty-admin">Жалоб нет 🎉</div>`; return; }
+    list.innerHTML = complaints.map(c => {
+      const pct = Math.min(100, Math.round(c.complaint_count / c.threshold * 100));
+      const color = pct >= 100 ? '#a855f7' : pct >= 60 ? '#ef4444' : '#f59e0b';
+      return `
+        <div class="complaint-admin-item">
+          <div class="complaint-bar">
+            <div class="complaint-bar-name">${c.station_name}</div>
+            <div class="complaint-bar-track"><div class="complaint-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+            <div class="complaint-bar-meta">${c.complaint_count} из ${c.threshold} жалоб · ${c.status === 'purple' ? '🟣 Фиолетовый' : '⚠️ Активно'}</div>
+          </div>
+          <button class="btn-sm-gray" onclick="admResetComplaints(${c.station_id})" title="Сбросить жалобы">↺</button>
+        </div>`;
+    }).join('');
+  } catch(e) { list.innerHTML = `<div class="empty-admin">Ошибка</div>`; }
+}
+
+async function admResetComplaints(stationId) {
+  try {
+    const r = await fetch(`${API}/admin/complaints/${stationId}/reset`, {method:'POST', headers:{...H, Authorization:`Bearer ${token}`}});
+    if(r.ok) { await loadAdmComplaints(); await loadAdmStats(); await loadStations(); }
+  } catch(e) { console.error(e); }
+}
+
+// — Настройки —
+async function loadAdmSettings() {
+  try {
+    const r = await fetch(`${API}/admin/settings`, {headers:{...H, Authorization:`Bearer ${token}`}});
+    const d = await r.json();
+    const set = (id, v) => { const e = document.getElementById(id); if(e) e.value = v || ''; };
+    set('adm-threshold-val', d.complaint_threshold || 5);
+    set('adm-tgid-val',  d.admin_tg_id  || '');
+    set('adm-tgids-val', d.admin_tg_ids || '');
+  } catch(e) { console.error(e); }
+}
+
+async function saveThreshold() {
+  const val = parseInt(document.getElementById('adm-threshold-val').value);
+  if(isNaN(val) || val < 1 || val > 100) { alert('Введите число от 1 до 100'); return; }
+  await saveAdminSetting({complaint_threshold: val});
+}
+
+async function saveAdminTgId() {
+  const val = document.getElementById('adm-tgid-val').value.trim();
+  await saveAdminSetting({admin_tg_id: val});
+}
+
+async function saveAdminTgIds() {
+  const val = document.getElementById('adm-tgids-val').value.trim();
+  await saveAdminSetting({admin_tg_ids: val});
+}
+
+async function saveAdminSetting(data) {
+  try {
+    const r = await fetch(`${API}/admin/settings`, {
+      method:'POST', headers:{...H,'Content-Type':'application/json', Authorization:`Bearer ${token}`},
+      body: JSON.stringify(data)
+    });
+    if(r.ok) {
+      // Показываем flash на всех кнопках сохранения ненадолго
+      document.querySelectorAll('.btn-save-sm').forEach(btn => {
+        const orig = btn.textContent; btn.textContent = '✅';
+        setTimeout(() => btn.textContent = orig, 1500);
+      });
+    }
+  } catch(e) { console.error(e); }
+}
+
+// — Аккордеон секций —
+function toggleAdmSection(bodyId, hdr) {
+  const body = document.getElementById(bodyId);
+  if(!body) return;
+  body.classList.toggle('collapsed');
+  const arrow = hdr.querySelector('[id^="adm-arrow"]') || hdr.querySelector('.admin-badge');
+}
+
+// — Перевод текстов —
+function applyAdminLang() {
+  const kz = lang === 'kz';
+  const s = (id, t) => { const e = document.getElementById(id); if(e) e.textContent = t; };
+  s('adm-hero-sub',           kz ? 'Жүйені басқару' : 'Управление системой');
+  s('adm-lbl-stations',       kz ? 'Станция'    : 'Станций');
+  s('adm-lbl-owners',         kz ? 'Иелер'      : 'Владельцев');
+  s('adm-lbl-pending',        kz ? 'Өтінімдер'  : 'Заявок');
+  s('adm-lbl-complaints',     kz ? 'Шағымдар'   : 'Жалоб');
+  s('adm-title-users',        kz ? 'Иелердің өтінімдері' : 'Заявки владельцев');
+  s('adm-title-stations',     kz ? 'Станциялар' : 'Станции');
+  s('adm-title-complaints',   kz ? 'Шағымдар'   : 'Жалобы');
+  s('adm-title-settings',     kz ? 'Баптаулар'  : 'Настройки');
+  s('adm-add-station-title',  kz ? 'Станция қосу': 'Добавить станцию');
+  s('adm-btn-add-st',         kz ? 'Қосу'       : 'Добавить');
+  s('adm-st-threshold-lbl',   kz ? 'Шағым шегі' : 'Порог жалоб');
+  s('adm-st-threshold-sub',   kz ? 'Күлгін статус алдындағы шағым саны' : 'Жалоб до фиолетового статуса');
+  s('adm-login-sub',   kz ? 'Кіру үшін парольді енгізіңіз' : 'Введите пароль для входа');
+  s('adm-lbl-pw',      kz ? 'ӘКІМШІ ПАРОЛІ' : 'ПАРОЛЬ АДМИНИСТРАТОРА');
+  s('adm-btn-login',   kz ? 'Кіру' : 'Войти');
+  s('adm-btn-back',    kz ? '← Артқа' : '← Назад');
+  s('adm-btn-logout',  kz ? '🚪 Шығу' : '🚪 Выйти из админки');
+  s('adm-title-feedback', kz ? 'Кері байланыс' : 'Обратная связь');
+}
+
+  hint.textContent = '●'.repeat(logoPulseCount) + '○'.repeat(5 - logoPulseCount);
+  hint.classList.add('show');
+
+  if(logoPulseCount >= 5) {
+    logoPulseCount = 0;
+    hint.classList.remove('show');
+    setTimeout(() => goAdminScreen(), 200);
+    // return;
+  }
+  logoPulseTimer = setTimeout(() => {
+    logoPulseCount = 0;
+    hint.classList.remove('show');
+  }, 2000);
+//}
+
+// ═══════════════════════════════════════════
+// ОБРАТНАЯ СВЯЗЬ
+// ═══════════════════════════════════════════
+
+// Замените на username вашего бота или группы поддержки
+const SUPPORT_TG = 'your_support_bot'; // например: 'agzs_support_bot'
+
+let fbCategory = 'bug';
+
+function openFeedback() {
+  const sheet = document.getElementById('feedback-sheet');
+  const form  = document.getElementById('feedback-form-wrap');
+  const succ  = document.getElementById('feedback-success');
+  if(!sheet) return;
+  form.style.display = 'block';
+  succ.style.display = 'none';
+  document.getElementById('fb-text').value = '';
+  applyFeedbackLang();
+  sheet.classList.add('open');
+}
+
+function closeFeedback() {
+  document.getElementById('feedback-sheet')?.classList.remove('open');
+}
+
+function selectFbCat(cat, btn) {
+  fbCategory = cat;
+  document.querySelectorAll('.fcat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+async function sendFeedback() {
+  const text = document.getElementById('fb-text').value.trim();
+  if(!text) {
+    document.getElementById('fb-text').style.borderColor = '#ef4444';
+    setTimeout(() => document.getElementById('fb-text').style.borderColor = '', 1500);
+    return;
+  }
+  const btn = document.getElementById('fb-send-btn');
+  btn.disabled = true;
+  btn.textContent = '...';
+  try {
+    const catEmoji = {bug:'🐛',idea:'💡',station:'⛽',other:'📝'};
+    const r = await fetch(`${API}/feedback`, {
+      method: 'POST',
+      headers: {...H, 'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        category: fbCategory,
+        text,
+        telegram_id: myTgId ? String(myTgId) : null,
+        username: tgUser?.username || null,
+        lang
+      })
+    });
+    if(r.ok) {
+      document.getElementById('feedback-form-wrap').style.display = 'none';
+      document.getElementById('feedback-success').style.display = 'block';
+      setTimeout(closeFeedback, 2500);
+    }
+  } catch(e) { console.error(e); }
+  btn.disabled = false;
+  const kz = lang === 'kz';
+  btn.textContent = kz ? 'Жіберу' : 'Отправить';
+}
+
+function openTgChat() {
+  // Открывает чат с ботом поддержки в Telegram
+  closeFeedback();
+  if(tg && tg.openTelegramLink) {
+    tg.openTelegramLink(`https://t.me/${SUPPORT_TG}`);
+  } else {
+    window.open(`https://t.me/${SUPPORT_TG}`, '_blank');
+  }
+}
+
+function applyFeedbackLang() {
+  const kz = lang === 'kz';
+  const s = (id, t) => { const e = document.getElementById(id); if(e) e.textContent = t; };
+  s('fb-title',      kz ? '💬 Кері байланыс'           : '💬 Обратная связь');
+  s('fb-sub',        kz ? 'Жазыңыз — әрбір хабарды оқимыз' : 'Напишите нам — мы читаем каждое сообщение');
+  s('fcat-bug',      kz ? '🐛 Қате'      : '🐛 Ошибка');
+  s('fcat-idea',     kz ? '💡 Ұсыныс'   : '💡 Идея');
+  s('fcat-station',  kz ? '⛽ Станция'   : '⛽ Станция');
+  s('fcat-other',    kz ? '📝 Басқа'     : '📝 Другое');
+  s('fb-send-btn',   kz ? 'Жіберу'      : 'Отправить');
+  s('fb-tg-btn',     kz ? '✈️ Чатта'    : '✈️ В чат');
+  s('fb-success-txt',kz ? 'Рахмет! Хабарыңызды алдық' : 'Спасибо! Мы получили ваше сообщение');
+  const ta = document.getElementById('fb-text');
+  if(ta) ta.placeholder = kz ? 'Мәселені немесе ұсынысты сипаттаңыз...' : 'Опишите проблему или предложение...';
+}
+
+// Показываем FAB после выбора роли
+function showFeedbackFab() {
+  const fab = document.getElementById('feedback-fab');
+  if(fab) fab.style.display = 'flex';
+}
+
+// Свайп вниз закрывает sheet
+let fbTouchY = 0;
+document.addEventListener('DOMContentLoaded', () => {
+  const card = document.querySelector('.feedback-card');
+  if(!card) return;
+  card.addEventListener('touchstart', e => fbTouchY = e.touches[0].clientY);
+  card.addEventListener('touchend',   e => { if(e.changedTouches[0].clientY - fbTouchY > 80) closeFeedback(); });
+});
+
+// ═══════════════════════════════════════════
+// ИСПРАВЛЕНИЕ: Недостающие функции
+// ═══════════════════════════════════════════
+
+function initFeedbackScreen() {
+  const sel = document.getElementById('fb-station-sel');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">— Выберите станцию —</option>';
+  allStations.forEach(s => {
+    sel.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+  });
+  const wrap = document.getElementById('fb-station-wrap');
+  if(wrap) wrap.style.display = fbCategory === 'station' ? 'block' : 'none';
+  applyFeedbackLang();
+}
+
+function openFeedbackForStation() {
+  if(!currentDetailStation) return;
+  closeDetail();
+  showScreen('feedback-screen', 2);
+  setTimeout(() => {
+    selectFbCat('station', document.querySelector('[data-cat="station"]'));
+    const sel = document.getElementById('fb-station-sel');
+    if(sel) sel.value = currentDetailStation.id;
+  }, 300);
+}
+
+async function loadAdmFeedback() {
+  const list = document.getElementById('adm-feedback-list');
+  if(!list) return;
+  try {
+    const r = await fetch(`${API}/admin/feedback`, {
+      headers: {...H, Authorization: `Bearer ${token}`}
+    });
+    const items = await r.json();
+    
+    if(items.length === 0) { 
+      list.innerHTML = '<div class="empty-admin">Отзывов нет</div>'; 
+      const badge = document.getElementById('adm-badge-feedback');
+      if(badge) badge.textContent = '0';
+      return; 
+    }
+    
+    const catColors = {
+      bug: '#ef4444',
+      idea: '#3b82f6',
+      station: '#22c55e',
+      other: '#94a3b8'
+    };
+    
+    const catNames = {
+      bug: '🐛 Ошибка',
+      idea: '💡 Идея',
+      station: '⛽ Станция',
+      other: '📝 Другое'
+    };
+    
+    list.innerHTML = items.map(f => `
+      <div class="fb-admin-item">
+        <span class="fb-admin-cat" style="background:${catColors[f.category] || '#e2e8f0'}20;color:${catColors[f.category] || '#94a3b8'}">
+          ${catNames[f.category] || f.category}
+        </span>
+        <div class="fb-admin-text">${f.text}</div>
+        <div class="fb-admin-meta">
+          ${f.station_name ? '📍 ' + f.station_name + ' · ' : ''}
+          ${f.telegram_id ? 'TG: ' + f.telegram_id : 'Анонимно'} · 
+          ${new Date(f.created_at).toLocaleString('ru')}
+        </div>
+      </div>
+    `).join('');
+    
+    const badge = document.getElementById('adm-badge-feedback');
+    if(badge) badge.textContent = items.length;
+    
+  } catch(e) { 
+    console.error(e);
+    list.innerHTML = '<div class="empty-admin">Ошибка загрузки</div>'; 
+  }
+}
+
 </script>
 </body>
 </html>

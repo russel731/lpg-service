@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Админ-панель - АГЗС Мониторинг</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f1f5f9;color:#0f172a;}
+.container{max-width:1400px;margin:0 auto;padding:20px;}
+.header{background:white;padding:20px;border-radius:12px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:center;}
+.header h1{font-size:24px;font-weight:800;}
+.header .subtitle{color:#64748b;font-size:14px;margin-top:4px;}
+.logout{padding:10px 20px;background:#ef4444;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;}
+.tabs{display:flex;gap:8px;background:white;padding:16px;border-radius:12px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.1);flex-wrap:wrap;}
+.tab{padding:10px 20px;border:none;background:transparent;cursor:pointer;font-weight:600;border-radius:8px;color:#64748b;transition:all 0.2s;}
+.tab.active{background:#3b82f6;color:white;}
+.tab:hover:not(.active){background:#f1f5f9;}
+.card{background:white;padding:24px;border-radius:12px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+.card h2{font-size:20px;font-weight:700;margin-bottom:16px;}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-bottom:20px;}
+.stat-card{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:20px;border-radius:12px;}
+.stat-card.green{background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%);}
+.stat-card.yellow{background:linear-gradient(135deg,#eab308 0%,#ca8a04 100%);}
+.stat-card.red{background:linear-gradient(135deg,#ef4444 0%,#dc2626 100%);}
+.stat-card h3{font-size:32px;font-weight:800;margin-bottom:4px;}
+.stat-card p{opacity:0.9;font-size:14px;}
+.btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;transition:all 0.2s;}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn-primary{background:#3b82f6;color:white;}
+.btn-primary:hover{background:#2563eb;}
+.btn-success{background:#22c55e;color:white;}
+.btn-success:hover{background:#16a34a;}
+.btn-warning{background:#eab308;color:#78350f;}
+.btn-warning:hover{background:#ca8a04;}
+.btn-danger{background:#ef4444;color:white;}
+.btn-danger:hover{background:#dc2626;}
+.form-group{margin-bottom:16px;}
+.form-group label{display:block;margin-bottom:6px;font-weight:600;font-size:14px;}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;}
+.form-group textarea{min-height:80px;resize:vertical;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+table{width:100%;border-collapse:collapse;}
+th,td{padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;font-size:13px;}
+th{background:#f8fafc;font-weight:700;}
+.status{padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600;}
+.status-green{background:#dcfce7;color:#166534;}
+.status-yellow{background:#fef3c7;color:#78350f;}
+.status-red{background:#fee2e2;color:#991b1b;}
+.status-purple{background:#f3e8ff;color:#6b21a8;}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;overflow-y:auto;padding:20px;}
+.modal-content{background:white;border-radius:16px;padding:32px;max-width:700px;width:100%;max-height:90vh;overflow-y:auto;}
+.modal-header{font-size:22px;font-weight:800;margin-bottom:24px;}
+.modal-footer{display:flex;gap:12px;margin-top:24px;}
+.hidden{display:none!important;}
+#map-picker, #map-view{height:300px;border-radius:8px;margin:16px 0;border:2px solid #e2e8f0;}
+.coord-display{background:#f8fafc;padding:12px;border-radius:8px;margin-top:8px;font-size:13px;color:#64748b;}
+.switch-method{display:flex;gap:8px;margin-bottom:16px;}
+.switch-method button{flex:1;padding:10px;border:2px solid #e2e8f0;background:white;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;}
+.switch-method button.active{background:#3b82f6;color:white;border-color:#3b82f6;}
+.action-btns{display:flex;gap:6px;flex-wrap:wrap;}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login-screen">
+  <div class="container" style="max-width:400px;margin-top:100px;">
+    <div class="card">
+      <h1 style="text-align:center;margin-bottom:24px;">🔐 Вход в админ-панель</h1>
+      <div class="form-group">
+        <label>Пароль</label>
+        <input type="password" id="admin-password" placeholder="Введите пароль" onkeypress="if(event.key==='Enter')login()">
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="login()">Войти</button>
+    </div>
+  </div>
+</div>
+
+<!-- Main Panel -->
+<div id="admin-panel" class="hidden">
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>⚙️ Админ-панель</h1>
+        <div class="subtitle">Управление системой АГЗС Мониторинг</div>
+      </div>
+      <button class="logout" onclick="logout()">Выйти</button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+      <button class="tab" onclick="switchTab('stations')">🗺️ Станции</button>
+      <button class="tab" onclick="switchTab('users')">👥 Заявки владельцев</button>
+      <button class="tab" onclick="switchTab('complaints')">⚠️ Жалобы</button>
+      <button class="tab" onclick="switchTab('settings')">⚙️ Настройки</button>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="tab-dashboard" class="tab-content">
+      <div class="stats">
+        <div class="stat-card">
+          <h3 id="stat-total">0</h3>
+          <p>Всего станций</p>
+        </div>
+        <div class="stat-card green">
+          <h3 id="stat-green">0</h3>
+          <p>Газ есть</p>
+        </div>
+        <div class="stat-card yellow">
+          <h3 id="stat-yellow">0</h3>
+          <p>Газ мало</p>
+        </div>
+        <div class="stat-card red">
+          <h3 id="stat-red">0</h3>
+          <p>Газ нет</p>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat-card" style="background:linear-gradient(135deg,#10b981 0%,#059669 100%);">
+          <h3 id="stat-approved-stations">0</h3>
+          <p>✅ Одобренные станции</p>
+        </div>
+        <div class="stat-card" style="background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);">
+          <h3 id="stat-pending-stations">0</h3>
+          <p>⏳ Станции без владельца</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>👥 Статистика пользователей</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:16px;">
+          <div style="padding:16px;background:#f8fafc;border-radius:8px;">
+            <div style="font-size:28px;font-weight:800;color:#3b82f6;" id="stat-total-users">0</div>
+            <div style="font-size:14px;color:#64748b;margin-top:4px;">Всего пользователей</div>
+          </div>
+          <div style="padding:16px;background:#f8fafc;border-radius:8px;">
+            <div style="font-size:28px;font-weight:800;color:#22c55e;" id="stat-owners">0</div>
+            <div style="font-size:14px;color:#64748b;margin-top:4px;">👤 Владельцы станций</div>
+          </div>
+          <div style="padding:16px;background:#f8fafc;border-radius:8px;">
+            <div style="font-size:28px;font-weight:800;color:#eab308;" id="stat-drivers">0</div>
+            <div style="font-size:14px;color:#64748b;margin-top:4px;">🚗 Водители</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>📈 Статистика жалоб</h2>
+        <div id="complaints-stats">Загрузка...</div>
+      </div>
+
+      <div class="card">
+        <h2>⭐ Премиум станции</h2>
+        <div id="premium-stats">Загрузка...</div>
+      </div>
+    </div>
+
+    <!-- Stations -->
+    <div id="tab-stations" class="tab-content hidden">
+      <!-- Все станции -->
+      <div class="card">
+        <h2>🗺️ Все станции (добавленные администратором)</h2>
+        
+        <!-- Search Box -->
+        <div style="display:flex;gap:12px;margin-bottom:16px;">
+          <div style="flex:1;">
+            <input 
+              type="text" 
+              id="station-search" 
+              placeholder="🔍 Поиск по названию, координатам, телефону, адресу..." 
+              style="width:100%;padding:12px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;"
+              oninput="filterStations()"
+            >
+          </div>
+          <button class="btn btn-success" onclick="showAddModal()">➕ Добавить станцию</button>
+        </div>
+        
+        <div id="stations-loading">Загрузка...</div>
+        <div style="overflow-x:auto;">
+          <table id="stations-table" class="hidden">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Название</th>
+                <th>Координаты</th>
+                <th>Телефон</th>
+                <th>Статус</th>
+                <th>Владелец</th>
+                <th>Премиум</th>
+                <th>Действия</th>
+              </tr>
+            </thead>
+            <tbody id="stations-list"></tbody>
+          </table>
+        </div>
+        <div id="no-results" class="hidden" style="padding:40px;text-align:center;color:#64748b;">
+          <div style="font-size:48px;margin-bottom:12px;">🔍</div>
+          <div style="font-size:16px;font-weight:600;margin-bottom:4px;">Ничего не найдено</div>
+          <div style="font-size:14px;">Попробуйте изменить поисковый запрос</div>
+        </div>
+      </div>
+
+      <!-- Одобренные станции -->
+      <div class="card" style="margin-top:20px;">
+        <h2>✅ Одобренные станции (с владельцами)</h2>
+        <p style="color:#64748b;font-size:14px;margin-bottom:16px;">Станции, на которые назначены и одобрены владельцы</p>
+        
+        <!-- Search Box для одобренных -->
+        <div style="margin-bottom:16px;">
+          <input 
+            type="text" 
+            id="approved-search" 
+            placeholder="🔍 Поиск по одобренным станциям..." 
+            style="width:100%;padding:12px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;"
+            oninput="filterApprovedStations()"
+          >
+        </div>
+        
+        <div id="approved-loading">Загрузка...</div>
+        <div style="overflow-x:auto;">
+          <table id="approved-table" class="hidden">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Название станции</th>
+                <th>Координаты</th>
+                <th>Владелец</th>
+                <th>Телефон владельца</th>
+                <th>Статус</th>
+                <th>Премиум</th>
+                <th>Действия</th>
+              </tr>
+            </thead>
+            <tbody id="approved-list"></tbody>
+          </table>
+        </div>
+        <div id="no-approved-results" class="hidden" style="padding:40px;text-align:center;color:#64748b;">
+          <div style="font-size:48px;margin-bottom:12px;">🔍</div>
+          <div style="font-size:16px;font-weight:600;margin-bottom:4px;">Ничего не найдено</div>
+          <div style="font-size:14px;">Нет одобренных станций по этому запросу</div>
+        </div>
+        <div id="no-approved" class="hidden" style="padding:40px;text-align:center;color:#64748b;">
+          <div style="font-size:48px;margin-bottom:12px;">📭</div>
+          <div style="font-size:16px;font-weight:600;margin-bottom:4px;">Нет одобренных станций</div>
+          <div style="font-size:14px;">Одобрите владельцев во вкладке "Заявки владельцев"</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Users -->
+    <div id="tab-users" class="tab-content hidden">
+      <div class="card">
+        <h2>👥 Заявки владельцев на управление станциями</h2>
+        <div id="users-loading">Загрузка...</div>
+        <div style="overflow-x:auto;">
+          <table id="users-table" class="hidden">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Имя</th>
+                <th>Телефон</th>
+                <th>Telegram</th>
+                <th>Станция</th>
+                <th>Адрес/Координаты</th>
+                <th>Статус</th>
+                <th>Действия</th>
+              </tr>
+            </thead>
+            <tbody id="users-list"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Complaints -->
+    <div id="tab-complaints" class="tab-content hidden">
+      <div class="card">
+        <h2>⚠️ Жалобы от водителей</h2>
+        <div id="complaints-loading">Загрузка...</div>
+        <div style="overflow-x:auto;">
+          <table id="complaints-table" class="hidden">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Станция</th>
+                <th>Причина</th>
+                <th>Комментарий</th>
+                <th>Дата</th>
+              </tr>
+            </thead>
+            <tbody id="complaints-list"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div id="tab-settings" class="tab-content hidden">
+      <div class="card">
+        <h2>⚙️ Настройки системы жалоб</h2>
+        
+        <div class="form-group">
+          <label>Порог жалоб для блокировки станции</label>
+          <input type="number" id="complaint-threshold" value="5" min="1" max="20">
+          <p style="font-size:12px;color:#64748b;margin-top:4px;">При достижении этого количества уникальных жалоб станция автоматически блокируется (статус → 🟣 Неизвестно)</p>
+        </div>
+
+        <div class="form-group">
+          <label>Срок действия жалобы (дней)</label>
+          <input type="number" id="complaint-validity" value="7" min="1" max="30">
+          <p style="font-size:12px;color:#64748b;margin-top:4px;">Жалобы старше этого срока не учитываются при подсчете. Рекомендуется: 7 дней</p>
+        </div>
+
+        <div class="form-group">
+          <label>Интервал между жалобами от одного пользователя (часов)</label>
+          <input type="number" id="complaint-cooldown" value="24" min="1" max="168">
+          <p style="font-size:12px;color:#64748b;margin-top:4px;">Один пользователь может жаловаться на станцию не чаще этого интервала</p>
+        </div>
+
+        <div style="padding:16px;background:#fef3c7;border-radius:8px;margin-top:20px;">
+          <p style="font-size:14px;color:#78350f;"><strong>ℹ️ Примечание:</strong> Изменение настроек вступит в силу для новых жалоб. Существующие жалобы обрабатываются по старым правилам.</p>
+        </div>
+
+        <button class="btn btn-success" onclick="saveSettings()" style="margin-top:20px;">Сохранить настройки</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Station Modal -->
+<div id="add-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header" id="modal-title">➕ Добавить станцию</div>
+    
+    <div class="switch-method">
+      <button id="method-coords" class="active" onclick="switchMethod('coords')">📍 По координатам</button>
+      <button id="method-map" onclick="switchMethod('map')">🗺️ Выбрать на карте</button>
+    </div>
+
+    <div id="coords-method">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Широта *</label>
+          <input type="number" step="0.0001" id="new-lat" placeholder="43.6520">
+        </div>
+        <div class="form-group">
+          <label>Долгота *</label>
+          <input type="number" step="0.0001" id="new-lon" placeholder="51.1580">
+        </div>
+      </div>
+    </div>
+
+    <div id="map-method" class="hidden">
+      <p style="color:#64748b;font-size:14px;margin-bottom:12px;">Кликните на карту:</p>
+      <div id="map-picker"></div>
+      <div class="coord-display" id="selected-coords">Координаты не выбраны</div>
+    </div>
+
+    <div class="form-group">
+      <label>Название *</label>
+      <input type="text" id="new-name" placeholder="АГЗС №1 Актау">
+    </div>
+
+    <div class="form-group">
+      <label>Телефон</label>
+      <input type="tel" id="new-phone" placeholder="+7 (777) 123-45-67" value="+7 ">
+    </div>
+
+    <div class="form-group">
+      <label>Адрес / Описание</label>
+      <textarea id="new-desc" placeholder="Актау, Микрорайон 1..."></textarea>
+    </div>
+
+    <input type="hidden" id="edit-station-id">
+
+    <div class="modal-footer">
+      <button class="btn" style="background:#f1f5f9;color:#64748b;" onclick="closeAddModal()">Отмена</button>
+      <button class="btn btn-success" id="save-station-btn" onclick="saveStation()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- View Station on Map Modal -->
+<div id="map-view-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header" id="map-view-title">Станция на карте</div>
+    <div id="map-view"></div>
+    <div id="map-view-info" style="margin-top:16px;padding:12px;background:#f8fafc;border-radius:8px;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="closeMapView()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:8000'
+  : window.location.origin;
+const H = {'ngrok-skip-browser-warning':'true'};
+let pickerMap = null;
+let viewMap = null;
+let pickerMarker = null;
+let selectedLat = null;
+let selectedLon = null;
+let allStations = [];
+let allUsers = [];
+let approvedStations = [];
+
+function login(){
+  const pw = document.getElementById('admin-password').value;
+  if(pw === 'admin123'){
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('admin-panel').classList.remove('hidden');
+    loadDashboard();
+  }else{
+    alert('❌ Неверный пароль!');
+  }
+}
+
+function logout(){
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('admin-panel').classList.add('hidden');
+  document.getElementById('admin-password').value = '';
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+  event.target.classList.add('active');
+  document.getElementById('tab-'+tab).classList.remove('hidden');
+  
+  if(tab==='dashboard') loadDashboard();
+  if(tab==='stations') loadStations();
+  if(tab==='users') loadUsers();
+  if(tab==='complaints') loadComplaints();
+}
+
+async function loadDashboard(){
+  try{
+    const r = await fetch(API+'/stations', {headers:H});
+    allStations = await r.json();
+    
+    // Get users to calculate approved stations
+    const ur = await fetch(API+'/admin/registrations', {headers:H});
+    allUsers = await ur.json();
+    const approvedUsers = allUsers.filter(u => u.is_approved && u.station_id);
+    const approvedCount = approvedUsers.length;
+    const pendingCount = allStations.length - approvedCount;
+    
+    document.getElementById('stat-total').textContent = allStations.length;
+    document.getElementById('stat-green').textContent = allStations.filter(s=>s.status==='green').length;
+    document.getElementById('stat-yellow').textContent = allStations.filter(s=>s.status==='yellow').length;
+    document.getElementById('stat-red').textContent = allStations.filter(s=>s.status==='red').length;
+    document.getElementById('stat-approved-stations').textContent = approvedCount;
+    document.getElementById('stat-pending-stations').textContent = pendingCount;
+    
+    // Analytics - Users statistics
+    try{
+      const ar = await fetch(API+'/admin/analytics', {headers:H});
+      const analytics = await ar.json();
+      document.getElementById('stat-total-users').textContent = analytics.total_users;
+      document.getElementById('stat-owners').textContent = analytics.owners;
+      document.getElementById('stat-drivers').textContent = analytics.drivers;
+      
+      const premiumCount = analytics.premium_stations;
+      const totalStations = analytics.total_stations;
+      const premiumPercent = totalStations > 0 ? ((premiumCount / totalStations) * 100).toFixed(1) : 0;
+      document.getElementById('premium-stats').innerHTML = `
+        <p style="margin-bottom:8px;">⭐ Премиум станций: <strong>${premiumCount}</strong> из <strong>${totalStations}</strong></p>
+        <p>Процент премиум станций: <strong>${premiumPercent}%</strong></p>
+      `;
+    }catch(e){
+      console.error('Analytics error:', e);
+    }
+    
+    // Complaints statistics
+    try{
+      const cr = await fetch(API+'/admin/complaints/stats', {headers:H});
+      const stats = await cr.json();
+      document.getElementById('complaints-stats').innerHTML = `
+        <p style="margin-bottom:8px;">Всего жалоб: <strong>${stats.total_complaints}</strong></p>
+        <p>Активных (за 7 дней): <strong>${stats.active_complaints}</strong></p>
+      `;
+    }catch(e){
+      document.getElementById('complaints-stats').innerHTML = '<p style="color:#ef4444;">Ошибка загрузки статистики жалоб</p>';
+    }
+  }catch(e){console.error(e);}
+}
+
+async function loadStations(){
+  try{
+    const r = await fetch(API+'/stations', {headers:H});
+    allStations = await r.json();
+    
+    const ur = await fetch(API+'/admin/registrations', {headers:H});
+    allUsers = await ur.json();
+    
+    renderStations(allStations);
+    loadApprovedStations();
+    
+    document.getElementById('stations-loading').classList.add('hidden');
+    document.getElementById('stations-table').classList.remove('hidden');
+  }catch(e){console.error(e);}
+}
+
+function renderStations(stations){
+  const tbody = document.getElementById('stations-list');
+  tbody.innerHTML = '';
+  
+  if(stations.length === 0){
+    document.getElementById('stations-table').classList.add('hidden');
+    document.getElementById('no-results').classList.remove('hidden');
+    return;
+  }
+  
+  document.getElementById('stations-table').classList.remove('hidden');
+  document.getElementById('no-results').classList.add('hidden');
+  
+  stations.forEach(s => {
+    const statusClass = {green:'status-green',yellow:'status-yellow',red:'status-red',purple:'status-purple'}[s.status] || 'status-purple';
+    const statusText = {green:'Газ есть',yellow:'Газ мало',red:'Газ нет',purple:'Неизвестно'}[s.status] || 'Неизвестно';
+    
+    // Find owner
+    const owner = allUsers.find(u => u.station_id === s.id && u.is_approved);
+    const ownerText = owner ? `✅ ${owner.name}` : '—';
+    
+    tbody.innerHTML += `
+      <tr>
+        <td>${s.id}</td>
+        <td>${s.name}</td>
+        <td>${s.lat.toFixed(4)}, ${s.lon.toFixed(4)}</td>
+        <td>${s.phone || '—'}</td>
+        <td>
+          <span class="status ${statusClass}">${statusText}</span>
+          <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;">
+            <button class="btn btn-sm" style="padding:4px 8px;font-size:11px;background:#22c55e;color:white;" onclick="changeStationStatus(${s.id}, 'green')" title="Газ есть">🟢</button>
+            <button class="btn btn-sm" style="padding:4px 8px;font-size:11px;background:#eab308;color:#78350f;" onclick="changeStationStatus(${s.id}, 'yellow')" title="Газ мало">🟡</button>
+            <button class="btn btn-sm" style="padding:4px 8px;font-size:11px;background:#ef4444;color:white;" onclick="changeStationStatus(${s.id}, 'red')" title="Газ нет">🔴</button>
+            <button class="btn btn-sm" style="padding:4px 8px;font-size:11px;background:#a855f7;color:white;" onclick="changeStationStatus(${s.id}, 'purple')" title="Неизвестно">🟣</button>
+          </div>
+        </td>
+        <td>${ownerText}</td>
+        <td>${s.isPremium ? '⭐ Да' : 'Нет'}</td>
+        <td>
+          <div class="action-btns">
+            ${s.isPremium 
+              ? `<button class="btn btn-danger btn-sm" onclick="togglePremium(${s.id}, false)">❌ Premium</button>`
+              : `<button class="btn btn-sm" style="padding:6px 12px;font-size:12px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:8px;cursor:pointer" onclick="togglePremium(${s.id}, true)">⭐ Premium</button>`
+            }
+            <button class="btn btn-warning btn-sm" onclick='editStation(${JSON.stringify(s)})'>Редактировать</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteStation(${s.id})">Удалить</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+function loadApprovedStations(){
+  const approvedUsers = allUsers.filter(u => u.is_approved && u.station_id);
+  
+  approvedStations = approvedUsers.map(u => {
+    const station = allStations.find(s => s.id === u.station_id);
+    return station ? {...station, owner: u} : null;
+  }).filter(Boolean);
+  
+  renderApprovedStations(approvedStations);
+  
+  document.getElementById('approved-loading').classList.add('hidden');
+  if(approvedStations.length === 0){
+    document.getElementById('no-approved').classList.remove('hidden');
+  }else{
+    document.getElementById('approved-table').classList.remove('hidden');
+  }
+}
+
+function renderApprovedStations(stations){
+  const tbody = document.getElementById('approved-list');
+  tbody.innerHTML = '';
+  
+  if(stations.length === 0 && document.getElementById('approved-search').value.trim()){
+    document.getElementById('approved-table').classList.add('hidden');
+    document.getElementById('no-approved-results').classList.remove('hidden');
+    document.getElementById('no-approved').classList.add('hidden');
+    return;
+  }
+  
+  if(stations.length === 0){
+    document.getElementById('approved-table').classList.add('hidden');
+    document.getElementById('no-approved-results').classList.add('hidden');
+    document.getElementById('no-approved').classList.remove('hidden');
+    return;
+  }
+  
+  document.getElementById('approved-table').classList.remove('hidden');
+  document.getElementById('no-approved-results').classList.add('hidden');
+  document.getElementById('no-approved').classList.add('hidden');
+  
+  stations.forEach(s => {
+    const statusClass = {green:'status-green',yellow:'status-yellow',red:'status-red',purple:'status-purple'}[s.status] || 'status-purple';
+    const statusText = {green:'Газ есть',yellow:'Газ мало',red:'Газ нет',purple:'Неизвестно'}[s.status] || 'Неизвестно';
+    
+    tbody.innerHTML += `
+      <tr>
+        <td>${s.id}</td>
+        <td>${s.name}</td>
+        <td>${s.lat.toFixed(4)}, ${s.lon.toFixed(4)}</td>
+        <td>${s.owner.name}</td>
+        <td>${s.owner.phone}</td>
+        <td><span class="status ${statusClass}">${statusText}</span></td>
+        <td>${s.isPremium ? '⭐ Да' : 'Нет'}</td>
+        <td>
+          <div class="action-btns">
+            ${s.isPremium 
+              ? `<button class="btn btn-danger btn-sm" onclick="togglePremium(${s.id}, false)">❌ Отозвать Premium</button>`
+              : `<button class="btn btn-sm" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:white" onclick="togglePremium(${s.id}, true)">⭐ Дать Premium</button>`
+            }
+            <button class="btn btn-primary btn-sm" onclick='showStationOnMap(${JSON.stringify(s)})'>🗺️ На карте</button>
+            <button class="btn btn-warning btn-sm" onclick='editStation(${JSON.stringify(s)})'>Редактировать</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+function filterStations(){
+  const searchTerm = document.getElementById('station-search').value.toLowerCase().trim();
+  
+  if(!searchTerm){
+    renderStations(allStations);
+    return;
+  }
+  
+  const filtered = allStations.filter(s => {
+    // Поиск по названию
+    if(s.name.toLowerCase().includes(searchTerm)) return true;
+    
+    // Поиск по телефону
+    if(s.phone && s.phone.toLowerCase().includes(searchTerm)) return true;
+    
+    // Поиск по описанию/адресу
+    if(s.description && s.description.toLowerCase().includes(searchTerm)) return true;
+    
+    // Поиск по координатам (полное совпадение или частичное)
+    const coords = `${s.lat.toFixed(4)}, ${s.lon.toFixed(4)}`;
+    if(coords.includes(searchTerm)) return true;
+    
+    // Поиск по ID
+    if(s.id.toString().includes(searchTerm)) return true;
+    
+    return false;
+  });
+  
+  renderStations(filtered);
+}
+
+function filterApprovedStations(){
+  const searchTerm = document.getElementById('approved-search').value.toLowerCase().trim();
+  
+  if(!searchTerm){
+    renderApprovedStations(approvedStations);
+    return;
+  }
+  
+  const filtered = approvedStations.filter(s => {
+    // Поиск по названию станции
+    if(s.name.toLowerCase().includes(searchTerm)) return true;
+    
+    // Поиск по имени владельца
+    if(s.owner && s.owner.name.toLowerCase().includes(searchTerm)) return true;
+    
+    // Поиск по телефону владельца
+    if(s.owner && s.owner.phone && s.owner.phone.toLowerCase().includes(searchTerm)) return true;
+    
+    // Поиск по координатам
+    const coords = `${s.lat.toFixed(4)}, ${s.lon.toFixed(4)}`;
+    if(coords.includes(searchTerm)) return true;
+    
+    // Поиск по ID
+    if(s.id.toString().includes(searchTerm)) return true;
+    
+    return false;
+  });
+  
+  renderApprovedStations(filtered);
+}
+
+async function loadUsers(){
+  try{
+    const r = await fetch(API+'/admin/registrations', {headers:H});
+    const users = await r.json();
+    
+    const tbody = document.getElementById('users-list');
+    tbody.innerHTML = '';
+    
+    for(const u of users){
+      let stationInfo = '—';
+      let mapBtn = '';
+      
+      if(u.station_id){
+        const station = allStations.find(s => s.id === u.station_id);
+        if(station){
+          stationInfo = `${station.lat.toFixed(4)}, ${station.lon.toFixed(4)}`;
+          mapBtn = `<button class="btn btn-primary btn-sm" onclick='showStationOnMap(${JSON.stringify(station)})'>🗺️ На карте</button>`;
+        }
+      }
+      
+      tbody.innerHTML += `
+        <tr>
+          <td>${u.id}</td>
+          <td>${u.name}</td>
+          <td>${u.phone}</td>
+          <td>${u.telegram_id || '—'}</td>
+          <td>${u.station_name || '—'}</td>
+          <td>${stationInfo}</td>
+          <td>${u.is_approved ? '✅ Одобрен' : '⏳ Ожидает'}</td>
+          <td>
+            <div class="action-btns">
+              ${mapBtn}
+              ${!u.is_approved ? `
+                <button class="btn btn-success btn-sm" onclick="approveUser(${u.id})">✅ Одобрить</button>
+                <button class="btn btn-danger btn-sm" onclick="rejectUser(${u.id})">❌ Отклонить</button>
+              ` : ''}
+            </div>
+          </td>
+        </tr>
+      `;
+    }
+    
+    document.getElementById('users-loading').classList.add('hidden');
+    document.getElementById('users-table').classList.remove('hidden');
+  }catch(e){console.error(e);}
+}
+
+async function loadComplaints(){
+  try{
+    const r = await fetch(API+'/admin/complaints', {headers:H});
+    const complaints = await r.json();
+    
+    const tbody = document.getElementById('complaints-list');
+    tbody.innerHTML = '';
+    
+    complaints.slice(0,50).forEach(c => {
+      const reasonText = {no_gas:'❌ Газа нет',low_gas:'⚠️ Газа мало',closed:'🔴 Закрыта',wrong_price:'💰 Неверная цена',other:'ℹ️ Другое'}[c.reason] || c.reason;
+      tbody.innerHTML += `
+        <tr>
+          <td>${c.id}</td>
+          <td>${c.station_name}</td>
+          <td>${reasonText}</td>
+          <td>${c.comment || '—'}</td>
+          <td>${new Date(c.created_at).toLocaleString('ru-RU')}</td>
+        </tr>
+      `;
+    });
+    
+    document.getElementById('complaints-loading').classList.add('hidden');
+    document.getElementById('complaints-table').classList.remove('hidden');
+  }catch(e){console.error(e);}
+}
+
+// Add/Edit Station
+function showAddModal(){
+  document.getElementById('modal-title').textContent = '➕ Добавить станцию';
+  document.getElementById('save-station-btn').textContent = 'Добавить';
+  document.getElementById('edit-station-id').value = '';
+  document.getElementById('new-name').value = '';
+  document.getElementById('new-lat').value = '';
+  document.getElementById('new-lon').value = '';
+  document.getElementById('new-phone').value = '+7 ';
+  document.getElementById('new-desc').value = '';
+  document.getElementById('add-modal').style.display = 'flex';
+  switchMethod('coords');
+}
+
+function editStation(station){
+  document.getElementById('modal-title').textContent = '✏️ Редактировать станцию';
+  document.getElementById('save-station-btn').textContent = 'Сохранить';
+  document.getElementById('edit-station-id').value = station.id;
+  document.getElementById('new-name').value = station.name;
+  document.getElementById('new-lat').value = station.lat;
+  document.getElementById('new-lon').value = station.lon;
+  document.getElementById('new-phone').value = station.phone || '+7 ';
+  document.getElementById('new-desc').value = station.description || '';
+  document.getElementById('add-modal').style.display = 'flex';
+  switchMethod('coords');
+}
+
+function closeAddModal(){
+  document.getElementById('add-modal').style.display = 'none';
+  selectedLat = null;
+  selectedLon = null;
+  if(pickerMap){pickerMap.remove();pickerMap=null;}
+}
+
+function switchMethod(method){
+  document.getElementById('method-coords').classList.toggle('active', method==='coords');
+  document.getElementById('method-map').classList.toggle('active', method==='map');
+  document.getElementById('coords-method').classList.toggle('hidden', method!=='coords');
+  document.getElementById('map-method').classList.toggle('hidden', method!=='map');
+  
+  if(method==='map' && !pickerMap){
+    setTimeout(() => {
+      pickerMap = L.map('map-picker').setView([43.6508, 51.1601], 12);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(pickerMap);
+      pickerMap.on('click', e => {
+        selectedLat = e.latlng.lat;
+        selectedLon = e.latlng.lng;
+        if(pickerMarker) pickerMap.removeLayer(pickerMarker);
+        pickerMarker = L.marker([selectedLat, selectedLon]).addTo(pickerMap);
+        document.getElementById('selected-coords').innerHTML = `<strong>✅ Выбрано:</strong> ${selectedLat.toFixed(6)}, ${selectedLon.toFixed(6)}`;
+      });
+    }, 100);
+  }
+}
+
+async function saveStation(){
+  const editId = document.getElementById('edit-station-id').value;
+  const name = document.getElementById('new-name').value.trim();
+  let lat, lon;
+  
+  if(document.getElementById('method-map').classList.contains('active')){
+    if(!selectedLat || !selectedLon){alert('Выберите место на карте!');return;}
+    lat = selectedLat;
+    lon = selectedLon;
+  }else{
+    lat = parseFloat(document.getElementById('new-lat').value);
+    lon = parseFloat(document.getElementById('new-lon').value);
+  }
+  
+  const desc = document.getElementById('new-desc').value.trim();
+  let phone = document.getElementById('new-phone').value.trim();
+  if(!name || !lat || !lon){alert('Заполните обязательные поля!');return;}
+  if(phone === '+7' || phone === '+7 ') phone = '';
+  
+  try{
+    const url = editId ? `${API}/admin/stations/${editId}` : `${API}/admin/stations`;
+    const method = editId ? 'PUT' : 'POST';
+    
+    const r = await fetch(url, {
+      method,
+      headers:{...H, 'Content-Type':'application/json'},
+      body:JSON.stringify({name, lat, lon, description: desc||null, phone: phone||null})
+    });
+    
+    if(r.ok){
+      alert(editId ? '✅ Станция обновлена!' : '✅ Станция добавлена!');
+      closeAddModal();
+      loadStations();
+      loadDashboard();
+    }else{
+      alert('❌ Ошибка сохранения');
+    }
+  }catch(e){alert('❌ Ошибка соединения');}
+}
+
+async function deleteStation(id){
+  if(!confirm('Удалить станцию?')) return;
+  try{
+    const r = await fetch(`${API}/admin/stations/${id}`, {method:'DELETE', headers:H});
+    if(r.ok){
+      alert('✅ Удалено');
+      loadStations();
+      loadDashboard();
+    }
+  }catch(e){alert('❌ Ошибка');}
+}
+
+async function changeStationStatus(stationId, newStatus){
+  const statusNames = {
+    green: '🟢 Газ есть',
+    yellow: '🟡 Газ мало', 
+    red: '🔴 Газ нет',
+    purple: '🟣 Неизвестно'
+  };
+  
+  if(!confirm(`Изменить статус на "${statusNames[newStatus]}"?`)) return;
+  
+  try{
+    const r = await fetch(`${API}/stations/${stationId}/status`, {
+      method: 'PUT',
+      headers: {...H, 'Content-Type': 'application/json'},
+      body: JSON.stringify({status: newStatus})
+    });
+    
+    if(r.ok){
+      alert(`✅ Статус изменен на "${statusNames[newStatus]}"`);
+      // Update local data
+      const station = allStations.find(s => s.id === stationId);
+      if(station) station.status = newStatus;
+      
+      // Re-render
+      const searchTerm = document.getElementById('station-search').value;
+      if(searchTerm){
+        filterStations();
+      }else{
+        renderStations(allStations);
+      }
+      loadDashboard();
+    }else{
+      alert('❌ Ошибка изменения статуса');
+    }
+  }catch(e){
+    console.error(e);
+    alert('❌ Ошибка соединения');
+  }
+}
+
+// View Station on Map
+function showStationOnMap(station){
+  document.getElementById('map-view-title').textContent = `🗺️ ${station.name}`;
+  document.getElementById('map-view-info').innerHTML = `
+    <p><strong>Координаты:</strong> ${station.lat.toFixed(6)}, ${station.lon.toFixed(6)}</p>
+    <p><strong>Адрес:</strong> ${station.description || 'Не указан'}</p>
+    <p><strong>Телефон:</strong> ${station.phone || 'Не указан'}</p>
+  `;
+  document.getElementById('map-view-modal').style.display = 'flex';
+  
+  setTimeout(() => {
+    if(viewMap) viewMap.remove();
+    viewMap = L.map('map-view').setView([station.lat, station.lon], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(viewMap);
+    L.marker([station.lat, station.lon]).addTo(viewMap)
+      .bindPopup(`<strong>${station.name}</strong>`).openPopup();
+  }, 100);
+}
+
+function closeMapView(){
+  document.getElementById('map-view-modal').style.display = 'none';
+  if(viewMap){viewMap.remove();viewMap=null;}
+}
+
+// User Actions
+async function approveUser(id){
+  try{
+    const r = await fetch(`${API}/admin/users/${id}/approve`, {method:'POST', headers:H});
+    if(r.ok){
+      alert('✅ Пользователь одобрен');
+      loadUsers();
+      loadDashboard();
+    }
+  }catch(e){alert('❌ Ошибка');}
+}
+
+async function rejectUser(id){
+  if(!confirm('Отклонить заявку этого пользователя?')) return;
+  try{
+    const r = await fetch(`${API}/admin/users/${id}/reject`, {method:'POST', headers:H});
+    if(r.ok){
+      alert('✅ Заявка отклонена');
+      loadUsers();
+    }else{
+      alert('❌ Ошибка');
+    }
+  }catch(e){alert('❌ Ошибка');}
+}
+
+function saveSettings(){
+  const threshold = document.getElementById('complaint-threshold').value;
+  const validity = document.getElementById('complaint-validity').value;
+  const cooldown = document.getElementById('complaint-cooldown').value;
+  
+  // В будущем можно сохранить в БД
+  localStorage.setItem('complaint_threshold', threshold);
+  localStorage.setItem('complaint_validity', validity);
+  localStorage.setItem('complaint_cooldown', cooldown);
+  
+  alert(`✅ Настройки сохранены!\n\n• Порог жалоб: ${threshold}\n• Срок действия: ${validity} дней\n• Интервал: ${cooldown} часов\n\n(Для полной интеграции требуется доработка backend)`);
+}
+
+async function togglePremium(stationId, enable){
+  const action = enable ? 'Дать Premium' : 'Отозвать Premium';
+  if(!confirm(`${action} для станции #${stationId}?`)) return;
+  try {
+    const r = await fetch(`${API}/admin/stations/${stationId}/premium`, {
+      method: 'POST',
+      headers: {...H, 'Content-Type': 'application/json'},
+      body: JSON.stringify({is_premium: enable})
+    });
+    if(r.ok){
+      alert(`✅ ${action} — выполнено!`);
+      loadStations();
+      loadDashboard();
+    } else {
+      alert('❌ Ошибка');
+    }
+  } catch(e){ alert('❌ Ошибка соединения'); }
+}
+
+// Phone auto-format
+document.addEventListener('input', e => {
+  if(e.target.id === 'new-phone'){
+    let val = e.target.value.replace(/[^\d+]/g, '');
+    if(!val.startsWith('+7')) val = '+7 ' + val.replace(/^\+?7?\s?/, '');
+    else val = '+7 ' + val.substring(2).replace(/\s/g, '');
+    e.target.value = val;
+  }
+});
+</script>
+</body>
+</html>
